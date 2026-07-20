@@ -1,0 +1,76 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../utils/app_config.dart';
+
+class ProductoService {
+  Future<Map<String, dynamic>> _post(Map<String, dynamic> body) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse(AppConfig.api('api_productos_crud.php')),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 20));
+      print('RESPUESTA RAW: ${response.body}');
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+      return {'success': false, 'message': 'Error del servidor'};
+    } catch (e) {
+      return {'success': false, 'message': 'Error: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> listar({
+    String busqueda = '',
+    bool soloStock = false,
+  }) =>
+      _post({
+        'accion': 'listar',
+        'busqueda': busqueda,
+        'solo_stock': soloStock ? 1 : 0,
+      });
+
+  Future<Map<String, dynamic>> detalle(int productoIde) =>
+      _post({'accion': 'detalle', 'produc_ide': productoIde});
+
+  Future<Map<String, dynamic>> cargarListas() => _post({'accion': 'listas'});
+
+  Future<Map<String, dynamic>> crear({
+    required int usuaIde,
+    required Map<String, dynamic> datos,
+    String? fotoBase64,
+  }) =>
+      _post({
+        'accion': 'crear',
+        'usua_ide': usuaIde,
+        ...datos,
+        if (fotoBase64 != null) 'foto_base64': fotoBase64,
+      });
+
+  Future<Map<String, dynamic>> editar({
+    required int usuaIde,
+    required int productoIde,
+    required Map<String, dynamic> datos,
+    String? fotoBase64,
+  }) =>
+      _post({
+        'accion': 'editar',
+        'usua_ide': usuaIde,
+        'produc_ide': productoIde,
+        ...datos,
+        if (fotoBase64 != null) 'foto_base64': fotoBase64,
+      });
+
+  Future<Map<String, dynamic>> eliminar({
+    required int usuaIde,
+    required int productoIde,
+  }) =>
+      _post({
+        'accion': 'eliminar',
+        'usua_ide': usuaIde,
+        'produc_ide': productoIde,
+      });
+}

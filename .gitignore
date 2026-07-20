@@ -1,4 +1,5 @@
 # Miscellaneous
+*.borrar.dart
 *.class
 *.log
 *.pyc

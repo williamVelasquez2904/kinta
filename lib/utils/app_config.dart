@@ -1,0 +1,50 @@
+class AppConfig {
+  // ── ID del cliente activo ─────────────────────────────────
+
+  //static const String clienteId = 'valenpan';
+  //static const String clienteId = 'farma-moto ';     // Kinta0002
+  static const String clienteId = 'nicestoresc'; // Kinta0003
+  //static const String clienteId = 'aromas';          // Kinta0004
+
+  // ── Nombre de la app base ─────────────────────────────────
+  static const String _appNombre = 'Kinta';
+
+  // ── Nombre completo: Kinta-sumimed ────────────────────────
+  static String get appNombre => '$_appNombre-$clienteId';
+
+  // ── Entorno ───────────────────────────────────────────────
+  //static const Entorno entorno = Entorno.local;
+  static const Entorno entorno = Entorno.produccion;
+
+  static const String _urlLocal = 'http://192.168.0.215';
+
+  //static const String _urlProduccion = 'https://ecotrago.com';
+  static const String _urlProduccion = 'https://kintatienda.com';
+
+  static String get baseUrl {
+    switch (entorno) {
+      case Entorno.local:
+        return _urlLocal;
+      case Entorno.produccion:
+        return _urlProduccion;
+    }
+  }
+
+  //static String get backendUrl => '$baseUrl/backend';
+  static String get backendUrl => '$baseUrl/backend/kinta';
+  // Para Nicely Store, el backend está en la ruta /backend/kinta_nicestoresc
+  //static String get backendUrl => '$baseUrl/backend/kinta_nicestoresc';
+  static String api(String endpoint) => '$backendUrl/$endpoint';
+  static bool get esLocal => entorno == Entorno.local;
+
+  static String get nombreEntorno {
+    switch (entorno) {
+      case Entorno.local:
+        return 'LOCAL';
+      case Entorno.produccion:
+        return 'PRODUCCIÓN';
+    }
+  }
+}
+
+enum Entorno { local, produccion }
