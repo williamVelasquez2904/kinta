@@ -8,8 +8,9 @@ class ProductoService {
   Future<Map<String, dynamic>> _post(Map<String, dynamic> body) async {
     const String endpoint = 'api_productos_crud.php';
     try {
+      //debugPrint('Body enviado: ${jsonEncode(body)}');
       body['cliente_id'] = AppConfig.clienteId;
-
+      debugPrint('Body enviado: ${jsonEncode(body)}');
       final response = await http
           .post(
             Uri.parse(AppConfig.api(endpoint)),

@@ -4,9 +4,9 @@ import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_info.dart';
 import 'login_screen.dart';
-import 'mis_clientes_screen.dart';
-import 'creditos_screen.dart';
-import 'saldos_screen.dart';
+//import 'mis_clientes_screen.dart';
+//import 'creditos_screen.dart';
+//import 'saldos_screen.dart';
 //#import 'saldos_ventas_screen.dart';
 import 'clientes_screen.dart';
 import 'asistente_screen.dart';
@@ -33,27 +33,30 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   late final List<Map<String, dynamic>> _menuOpciones = [
+    /*
     {
       'icon': Icons.people_alt_outlined,
       'label': 'Mis Clientes',
       'color': AppColors.misClientes,
       'colorBg': AppColors.misClientesBg,
       'screen': MisClientesScreen(user: widget.user),
-    },
+    },*/
+    /*
     {
       'icon': Icons.hourglass_empty,
       'label': 'Créditos Vencidos',
       'color': AppColors.creditosVencidos,
       'colorBg': AppColors.creditosBg,
       'screen': const CreditosScreen(),
-    },
+    },*/
+    /*
     {
       'icon': Icons.balance,
       'label': 'Saldos',
       'color': AppColors.saldos,
       'colorBg': AppColors.saldosBg,
       'screen': const SaldosScreen(),
-    },
+    }, */
     /*
     {
       'icon': Icons.trending_up,
@@ -76,20 +79,22 @@ class _HomeScreenState extends State<HomeScreen> {
       'colorBg': AppColors.purpleBg,
       'screen': ProductosScreen(user: widget.user),
     },
-    {
-      'icon': Icons.bar_chart,
-      'label': 'Reporte Ventas',
-      'color': AppColors.info,
-      'colorBg': AppColors.infoBg,
-      'screen': ReporteVentasScreen(user: widget.user),
-    },
-    {
-      'icon': Icons.smart_toy_outlined,
-      'label': 'Asistente Kin',
-      'color': AppColors.primary,
-      'colorBg': AppColors.primaryBg,
-      'screen': AsistenteScreen(user: widget.user),
-    },
+    if (widget.user.esAdministrador) ...[
+      {
+        'icon': Icons.business_outlined,
+        'label': 'Proveedores',
+        'color': AppColors.purple,
+        'colorBg': AppColors.purpleBg,
+        'screen': ProveedoresScreen(user: widget.user),
+      },
+      {
+        'icon': Icons.shopping_bag_outlined,
+        'label': 'Compras',
+        'color': AppColors.warning,
+        'colorBg': AppColors.warningBg,
+        'screen': ComprasScreen(user: widget.user),
+      },
+    ],
     if (widget.user.accesoVentas)
       {
         'icon': Icons.point_of_sale,
@@ -98,6 +103,13 @@ class _HomeScreenState extends State<HomeScreen> {
         'colorBg': AppColors.infoBg,
         'screen': VentasScreen(user: widget.user),
       },
+    {
+      'icon': Icons.bar_chart,
+      'label': 'Reporte Ventas',
+      'color': AppColors.info,
+      'colorBg': AppColors.infoBg,
+      'screen': ReporteVentasScreen(user: widget.user),
+    },
 
     //
     {
@@ -125,22 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'colorBg': AppColors.successBg,
         'screen': GraficaProductosScreen(user: widget.user),
       },
-    if (widget.user.esAdministrador) ...[
-      {
-        'icon': Icons.shopping_bag_outlined,
-        'label': 'Compras',
-        'color': AppColors.warning,
-        'colorBg': AppColors.warningBg,
-        'screen': ComprasScreen(user: widget.user),
-      },
-      {
-        'icon': Icons.business_outlined,
-        'label': 'Proveedores',
-        'color': AppColors.purple,
-        'colorBg': AppColors.purpleBg,
-        'screen': ProveedoresScreen(user: widget.user),
-      },
-    ],
+
     if (widget.user.esAdministrador)
       {
         'icon': Icons.remove_circle_outline,
@@ -149,6 +146,14 @@ class _HomeScreenState extends State<HomeScreen> {
         'colorBg': AppColors.errorBg,
         'screen': AjustesScreen(user: widget.user),
       },
+    {
+      'icon': Icons.smart_toy_outlined,
+      'label': 'Asistente Kin',
+      'color': AppColors.primary,
+      'colorBg': AppColors.primaryBg,
+      'screen': AsistenteScreen(user: widget.user),
+    },
+
     if (widget.user.tius == 1)
       {
         'icon': Icons.settings_outlined,

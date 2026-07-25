@@ -250,6 +250,13 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                             negrita: true,
                           ),
                           _fila(
+                            Icons.dataset_outlined,
+                            'Base de datos',
+                            _empresa['db_nombre']?.toString() ?? '-',
+                            AppColors.info,
+                            negrita: true,
+                          ),
+                          _fila(
                             Icons.business_outlined,
                             'Empresa',
                             _empresa['empresa_nombre']?.toString() ?? '-',
