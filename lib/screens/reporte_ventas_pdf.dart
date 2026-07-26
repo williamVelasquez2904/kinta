@@ -45,7 +45,8 @@ class ReporteVentasPdf {
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
                     pw.Text(
-                      'REPORTE DE VENTAS',
+                      /*'REPORTE DE VENTAS',*/
+                      'REPORTE DE NOTAS DE VENTA',
                       style: pw.TextStyle(
                           fontSize: 14, fontWeight: pw.FontWeight.bold),
                     ),
@@ -81,7 +82,7 @@ class ReporteVentasPdf {
           // ── Fila 1: Total vendido + Facturas ─────────────
           pw.Row(
             children: [
-              _tarjetaResumen('Total Vendido', _moneda(totalGeneral)),
+              _tarjetaResumen('Total Notas', _moneda(totalGeneral)),
               pw.SizedBox(width: 8),
               _tarjetaResumen('Facturas', '$totalFacturas'),
             ],
@@ -112,7 +113,8 @@ class ReporteVentasPdf {
           // ── Resumen por vendedor (admin) ──────────────────
           if (esAdmin && resumenVendedores.isNotEmpty) ...[
             pw.Text(
-              'VENTAS POR VENDEDOR',
+              /*'VENTAS POR VENDEDOR',*/
+              'NOTAS POR VENDEDOR',
               style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 6),

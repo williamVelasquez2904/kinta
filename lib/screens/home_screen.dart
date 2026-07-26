@@ -99,14 +99,16 @@ class _HomeScreenState extends State<HomeScreen> {
     if (widget.user.accesoVentas)
       {
         'icon': Icons.point_of_sale,
-        'label': 'Ventas',
+        /*'label': 'Ventas',*/
+        'label': 'Notas de Entrega',
         'color': AppColors.info,
         'colorBg': AppColors.infoBg,
         'screen': VentasScreen(user: widget.user),
       },
     {
       'icon': Icons.bar_chart,
-      'label': 'Reporte Ventas',
+      'label': 'Reporte Notas de Entrega',
+      /*'label': 'Reporte Ventas',*/
       'color': AppColors.info,
       'colorBg': AppColors.infoBg,
       'screen': ReporteVentasScreen(user: widget.user),
@@ -115,7 +117,8 @@ class _HomeScreenState extends State<HomeScreen> {
     //
     {
       'icon': Icons.query_stats,
-      'label': 'Ventas por Producto',
+      'label': 'Notas por Producto',
+      /*'label': 'Ventas por Producto',*/
       'color': AppColors.info,
       'colorBg': AppColors.infoBg,
       'screen': ReporteProductoScreen(user: widget.user),

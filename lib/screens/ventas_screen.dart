@@ -79,15 +79,16 @@ class _VentasScreenState extends State<VentasScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ventas'),
+        /*title: const Text('Ventas'),*/
+        title: const Text('Notas'),
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: AppColors.primary,
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textHint,
           tabs: const [
-            Tab(icon: Icon(Icons.add_shopping_cart), text: 'Nueva Venta'),
-            Tab(icon: Icon(Icons.receipt_long), text: 'Mis Ventas'),
+            Tab(icon: Icon(Icons.add_shopping_cart), text: 'Nueva Nota'),
+            Tab(icon: Icon(Icons.receipt_long), text: 'Mis Notas'),
           ],
         ),
       ),

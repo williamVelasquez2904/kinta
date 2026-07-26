@@ -129,8 +129,9 @@ class _ReporteVentasScreenState extends State<ReporteVentasScreen> {
         facturas: _facturas,
       );
 
-      await AuditoriaService().exportarReporte(widget.user, 'Reporte de Ventas');
-
+      await AuditoriaService()
+          /*.exportarReporte(widget.user, 'Reporte de Ventas');*/
+          .exportarReporte(widget.user, 'Reporte de Notas');
       await Printing.layoutPdf(
         onLayout: (format) => pdf.save(),
         name:
@@ -180,7 +181,8 @@ class _ReporteVentasScreenState extends State<ReporteVentasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reporte de Ventas'),
+        /*title: const Text('Reporte de Ventas'),*/
+        title: const Text('Reporte de Notas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -251,7 +253,7 @@ class _ReporteVentasScreenState extends State<ReporteVentasScreen> {
                             children: [
                               Expanded(
                                 child: _tarjetaResumen(
-                                  'Total Vendido',
+                                  'Total Notas',
                                   FormatoNumero.monedaConSimbolo(_totalGeneral),
                                   AppColors.primary,
                                   Icons.attach_money,
@@ -323,11 +325,11 @@ class _ReporteVentasScreenState extends State<ReporteVentasScreen> {
                                 children: List.generate(
                                     _resumenVendedores.length, (i) {
                                   final v = _resumenVendedores[i];
-                                    final total =
+                                  final total =
                                       double.tryParse(v['total'].toString()) ??
-                                        0;
-                                    final ganancia = double.tryParse(
-                                        (v['ganancia'] ?? 0).toString()) ??
+                                          0;
+                                  final ganancia = double.tryParse(
+                                          (v['ganancia'] ?? 0).toString()) ??
                                       0;
 
                                   return Column(
@@ -446,11 +448,11 @@ class _ReporteVentasScreenState extends State<ReporteVentasScreen> {
                           else
                             ...List.generate(_facturas.length, (i) {
                               final f = _facturas[i];
-                                final total = double.tryParse(
-                                    f['factura_total'].toString()) ??
+                              final total = double.tryParse(
+                                      f['factura_total'].toString()) ??
                                   0;
-                                final ganancia = double.tryParse(
-                                    (f['ganancia'] ?? 0).toString()) ??
+                              final ganancia = double.tryParse(
+                                      (f['ganancia'] ?? 0).toString()) ??
                                   0;
 
                               return Container(

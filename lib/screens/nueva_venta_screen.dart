@@ -270,7 +270,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Fecha de la venta ─────────────────────────
-            _seccion('FECHA DE VENTA'),
+            _seccion('FECHA DE LA NOTA'),
             const SizedBox(height: 8),
             GestureDetector(
               onTap: _seleccionarFecha,
@@ -746,7 +746,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                       )
                     : const Icon(Icons.save),
                 label: Text(
-                  _isGuardando ? 'Guardando...' : 'Registrar Venta',
+                  _isGuardando ? 'Guardando...' : 'Registrar Nota de Entrega',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,

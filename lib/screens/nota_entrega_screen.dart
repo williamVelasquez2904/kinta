@@ -136,7 +136,7 @@ class _NotaEntregaScreenState extends State<NotaEntregaScreen> {
                                 color: AppColors.success, size: 56),
                             const SizedBox(height: 12),
                             const Text(
-                              '¡Venta registrada!',
+                              'Nota registrada!',
                               style: TextStyle(
                                 color: AppColors.success,
                                 fontSize: 18,

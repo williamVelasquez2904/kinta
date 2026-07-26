@@ -43,7 +43,7 @@ class ReporteVentasPdf {
                   crossAxisAlignment: pw.CrossAxisAlignment.end,
                   children: [
                     pw.Text(
-                      'REPORTE DE VENTAS',
+                      'REPORTE DE NOTAS DE VENTA',
                       style: pw.TextStyle(
                           fontSize: 14, fontWeight: pw.FontWeight.bold),
                     ),

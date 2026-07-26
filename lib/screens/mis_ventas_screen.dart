@@ -170,7 +170,7 @@ class _MisVentasScreenState extends State<MisVentasScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text(
-                                'Total Vendido',
+                                'Total Notas',
                                 style: TextStyle(
                                     color: AppColors.textSecondary,
                                     fontSize: 13),

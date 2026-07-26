@@ -168,7 +168,8 @@ class _ReporteProductoScreenState extends State<ReporteProductoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ventas por Producto'),
+        /*title: const Text('Ventas por Producto'),*/
+        title: const Text('Notas por Producto'),
       ),
       body: Column(
         children: [
@@ -291,7 +292,7 @@ class _ReporteProductoScreenState extends State<ReporteProductoScreen> {
                                     color: AppColors.textHint, size: 52),
                                 const SizedBox(height: 12),
                                 Text(
-                                  'Sin ventas de "${_searchCtrl.text}"\nentre ${_fechaDisplay(_fechaDesde)} y ${_fechaDisplay(_fechaHasta)}',
+                                  'Sin Notas de "${_searchCtrl.text}"\nentre ${_fechaDisplay(_fechaDesde)} y ${_fechaDisplay(_fechaHasta)}',
                                   textAlign: TextAlign.center,
                                   style: const TextStyle(
                                       color: AppColors.textSecondary,
@@ -389,7 +390,7 @@ class _ReporteProductoScreenState extends State<ReporteProductoScreen> {
 
                               // ── Detalle ventas ────────────
                               const Text(
-                                'DETALLE DE VENTAS',
+                                'DETALLE DE NOTAS',
                                 style: TextStyle(
                                   color: AppColors.primary,
                                   fontSize: 11,
