@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import '../models/user_model.dart';
+import '../services/auditoria_service.dart';
 import '../services/venta_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/formato_numero.dart';
@@ -127,6 +128,8 @@ class _ReporteVentasScreenState extends State<ReporteVentasScreen> {
         resumenVendedores: _resumenVendedores,
         facturas: _facturas,
       );
+
+      await AuditoriaService().exportarReporte(widget.user, 'Reporte de Ventas');
 
       await Printing.layoutPdf(
         onLayout: (format) => pdf.save(),

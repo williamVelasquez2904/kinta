@@ -20,6 +20,7 @@ import 'compras_screen.dart';
 import 'proveedores_screen.dart';
 import 'ajustes_screen.dart';
 import 'configuracion_screen.dart';
+import 'auditoria_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel user;
@@ -153,6 +154,15 @@ class _HomeScreenState extends State<HomeScreen> {
       'colorBg': AppColors.primaryBg,
       'screen': AsistenteScreen(user: widget.user),
     },
+
+    if (widget.user.tius == 1)
+      {
+        'icon': Icons.history,
+        'label': 'Auditoría',
+        'color': AppColors.purple,
+        'colorBg': AppColors.purpleBg,
+        'screen': AuditoriaScreen(user: widget.user),
+      },
 
     if (widget.user.tius == 1)
       {

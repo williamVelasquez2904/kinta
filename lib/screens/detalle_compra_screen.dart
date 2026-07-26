@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/compra_service.dart';
+import '../services/auditoria_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/formato_numero.dart';
 
@@ -79,6 +80,14 @@ class _DetalleCompraScreenState extends State<DetalleCompraScreen> {
       compraIde: widget.compraIde,
     );
     setState(() => _accionando = false);
+
+    if (result['success'] == true) {
+      await AuditoriaService().confirmarCompra(
+        widget.user,
+        widget.compraIde,
+        _compra['compra_num'],
+      );
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

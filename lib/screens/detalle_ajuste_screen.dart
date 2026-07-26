@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/ajuste_service.dart';
+import '../services/auditoria_service.dart';
 import '../theme/app_theme.dart';
 
 class DetalleAjusteScreen extends StatefulWidget {
@@ -80,6 +81,15 @@ class _DetalleAjusteScreenState extends State<DetalleAjusteScreen> {
       ajusteIde: widget.ajusteIde,
     );
     setState(() => _accionando = false);
+
+    if (result['success'] == true) {
+      await AuditoriaService().aplicarAjuste(
+        widget.user,
+        widget.ajusteIde,
+        _ajuste['ajuste_num'],
+        _ajuste['ajuste_razon'],
+      );
+    }
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

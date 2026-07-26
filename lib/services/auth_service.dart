@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../utils/app_config.dart';
+import 'auditoria_service.dart';
+
+final _auditoria = AuditoriaService();
 
 class AuthService {
   Future<Map<String, dynamic>> login(String login, String clave) async {
@@ -24,12 +27,16 @@ class AuthService {
         if (data['success'] == true) {
           final user = UserModel.fromJson(data, login);
           await _guardarSesion(user);
+          await _auditoria.login(user);
           return {'success': true, 'user': user};
         }
+        await _auditoria.loginFallido(login);
         return {'success': false, 'message': data['message']};
       }
+      await _auditoria.loginFallido(login);
       return {'success': false, 'message': 'Error del servidor'};
     } catch (e) {
+      await _auditoria.loginFallido(login);
       return {'success': false, 'message': 'Error de conexión: $e'};
     }
   }
@@ -73,6 +80,10 @@ class AuthService {
 
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
+    final user = await getSesionActiva();
+    if (user != null) {
+      await _auditoria.logout(user);
+    }
     await prefs.clear();
   }
 }

@@ -37,6 +37,7 @@ class _ProveedoresScreenState extends State<ProveedoresScreen> {
         usuaIde: widget.user.usuaIde,
         busqueda: busqueda,
       );
+      debugPrint('api_proveedores.php respuesta: $result');
       if (result['success'] == true) {
         setState(() => _proveedores = result['proveedores'] ?? []);
       }
@@ -204,6 +205,7 @@ class _ProveedoresScreenState extends State<ProveedoresScreen> {
         usuaIde: widget.user.usuaIde,
         proveIde: int.tryParse(p['prove_ide'].toString()) ?? 0,
       );
+      debugPrint('api_proveedores.php eliminar respuesta: $result');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(result['message'] ?? ''),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../models/user_model.dart';
 import '../services/producto_service.dart';
+import '../services/auditoria_service.dart';
 import '../theme/app_theme.dart';
 
 class FormProductoScreen extends StatefulWidget {
@@ -265,6 +266,21 @@ class _FormProductoScreenState extends State<FormProductoScreen> {
       if (!mounted) return;
 
       if (result['success'] == true) {
+        final auditoria = AuditoriaService();
+        if (_esEdicion) {
+          await auditoria.editarProducto(
+            widget.user,
+            widget.productoIde!,
+            _descripCtrl.text,
+          );
+        } else {
+          await auditoria.crearProducto(
+            widget.user,
+            result['produc_ide'],
+            _descripCtrl.text,
+          );
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'Guardado'),

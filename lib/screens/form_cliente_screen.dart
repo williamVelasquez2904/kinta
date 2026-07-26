@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/cliente_service.dart';
+import '../services/auditoria_service.dart';
 import '../theme/app_theme.dart';
 
 class FormClienteScreen extends StatefulWidget {
@@ -371,6 +372,21 @@ class _FormClienteScreenState extends State<FormClienteScreen> {
       if (!mounted) return;
 
       if (result['success'] == true) {
+        final auditoria = AuditoriaService();
+        if (_esEdicion) {
+          await auditoria.editarCliente(
+            widget.user,
+            widget.clienIde!,
+            _nombre1Ctrl.text,
+          );
+        } else {
+          await auditoria.crearCliente(
+            widget.user,
+            result['clien_ide'],
+            _nombre1Ctrl.text,
+          );
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(result['message'] ?? 'Guardado'),
