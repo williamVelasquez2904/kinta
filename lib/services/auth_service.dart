@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user_model.dart';
 import '../utils/app_config.dart';
 import 'auditoria_service.dart';
+import 'bcv_service.dart';
 
 final _auditoria = AuditoriaService();
 
@@ -28,6 +29,7 @@ class AuthService {
           final user = UserModel.fromJson(data, login);
           await _guardarSesion(user);
           await _auditoria.login(user);
+          BcvService().actualizarTasaDiaria().then((_) {}).catchError((_) {});
           return {'success': true, 'user': user};
         }
         await _auditoria.loginFallido(login);

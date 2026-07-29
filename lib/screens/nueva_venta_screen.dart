@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/venta_service.dart';
-import '../services/auditoria_service.dart';
+import '../services/tasa_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/formato_numero.dart';
 import '../models/carrito_item.dart';
@@ -19,6 +19,7 @@ class NuevaVentaScreen extends StatefulWidget {
 
 class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
   final _ventaService = VentaService();
+  final _tasaService = TasaService();
 
   // Cliente seleccionado
   int? _clienteIde;
@@ -42,6 +43,16 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
   final List<CarritoItem> _carrito = [];
   bool _isGuardando = false;
 
+  // Tasas
+  Map _tasa = {};
+  String? _tasaFechaHora;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarTasa();
+  }
+
   @override
   void dispose() {
     _descuentoCtrl.dispose();
@@ -52,7 +63,35 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     super.dispose();
   }
 
-  // ── Helpers ──────────────────────────────────────────────
+  Future<void> _cargarTasa() async {
+    final result = await _tasaService.obtener();
+    if (result['success'] == true && mounted) {
+      final tasa = result['tasa'] ?? {};
+
+      String? fechaHora;
+      if (result['fecha'] != null) {
+        fechaHora = result['fecha'].toString();
+        if (result['hora'] != null) fechaHora = '$fechaHora ${result['hora']}';
+      }
+      if (fechaHora == null && tasa is Map) {
+        if (tasa['fecha'] != null) {
+          fechaHora = tasa['fecha'].toString();
+          if (tasa['hora'] != null) fechaHora = '$fechaHora ${tasa['hora']}';
+        } else if (tasa['fecha_hora'] != null) {
+          fechaHora = tasa['fecha_hora'].toString();
+        } else if (tasa['actualizado'] != null) {
+          fechaHora = tasa['actualizado'].toString();
+        }
+      }
+
+      setState(() {
+        _tasa = tasa;
+        _tasaFechaHora = fechaHora;
+      });
+    }
+  }
+
+  // ── Helpers fecha ────────────────────────────────────────
   String _fechaSql(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
@@ -66,7 +105,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
         _fechaVenta.day == hoy.day;
   }
 
-  // ── Cálculos ──────────────────────────────────────────────
+  // ── Cálculos ─────────────────────────────────────────────
   double get _subtotal {
     double total = 0;
     for (var item in _carrito) {
@@ -88,20 +127,18 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
   double get _saldo => _total - _abonoInicial;
 
-  // ── Seleccionar fecha ──────────────────────────────────────
+  // ── Seleccionar fecha ────────────────────────────────────
   Future<void> _seleccionarFecha() async {
     final fecha = await showDatePicker(
       context: context,
       initialDate: _fechaVenta,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(), // No permite fechas futuras
+      lastDate: DateTime.now(),
       builder: (context, child) => Theme(
         data: Theme.of(context).copyWith(
           colorScheme: const ColorScheme.light(
             primary: AppColors.primary,
             onPrimary: Colors.white,
-            surface: AppColors.surface,
-            onSurface: AppColors.textPrimary,
           ),
         ),
         child: child!,
@@ -112,7 +149,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
-  // ── Seleccionar cliente ────────────────────────────────────
+  // ── Seleccionar cliente ──────────────────────────────────
   Future<void> _seleccionarCliente() async {
     final resultado = await Navigator.push<Map>(
       context,
@@ -131,7 +168,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
-  // ── Agregar producto ───────────────────────────────────────
+  // ── Agregar producto ─────────────────────────────────────
   Future<void> _agregarProducto() async {
     final producto = await Navigator.push<CarritoItem>(
       context,
@@ -166,7 +203,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     });
   }
 
-  // ── Guardar venta ──────────────────────────────────────────
+  // ── Guardar venta ────────────────────────────────────────
   Future<void> _guardarVenta() async {
     if (_clienteIde == null) {
       _mostrarError('Selecciona un cliente');
@@ -188,7 +225,6 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
               'produc_ide': item.productoIde,
               'cantidad': item.cantidad,
               'descuento': item.descuento,
-              'costo': item.costo,
             })
         .toList();
 
@@ -207,18 +243,9 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
       items: items,
     );
 
-    debugPrint('Registrar Venta - request items: $items');
-    debugPrint('Registrar Venta - api response: $result');
-
     setState(() => _isGuardando = false);
 
     if (result['success'] == true) {
-      await AuditoriaService().crearVenta(
-        widget.user,
-        result['factura_ide'],
-        result['factura_num'],
-        _total,
-      );
       _limpiarFormulario();
       if (mounted) {
         Navigator.push(
@@ -254,10 +281,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
   void _mostrarError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: AppColors.error,
-      ),
+      SnackBar(content: Text(msg), backgroundColor: AppColors.error),
     );
   }
 
@@ -269,8 +293,60 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Fecha de la venta ─────────────────────────
-            _seccion('FECHA DE LA NOTA'),
+            // ── Tasas del día ──────────────────────────
+            if (_tasa.isNotEmpty) ...[
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryBg,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Tasas del día',
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            _chipTasa(
+                                'BCV', _tasa['tasa_bcv'], AppColors.primary),
+                            const SizedBox(width: 8),
+                            _chipTasa('Par.', _tasa['tasa_paralela'],
+                                AppColors.warning),
+                            const SizedBox(width: 8),
+                            _chipTasa('€', _tasa['tasa_euro'], AppColors.info),
+                          ],
+                        ),
+                        if (_tasaFechaHora != null) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            'Actualizado: ${_tasaFechaHora}',
+                            style: const TextStyle(
+                              color: AppColors.textHint,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            // ── Fecha de la venta ──────────────────────
+            _seccion('FECHA DE LA NOTA DE ENTREGA'),
             const SizedBox(height: 8),
             GestureDetector(
               onTap: _seleccionarFecha,
@@ -328,8 +404,6 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                 ),
               ),
             ),
-
-            // Botón rápido para volver a hoy
             if (!_esHoy) ...[
               const SizedBox(height: 6),
               Align(
@@ -347,7 +421,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Cliente ────────────────────────────────────
+            // ── Cliente ────────────────────────────────
             _seccion('CLIENTE'),
             const SizedBox(height: 8),
             GestureDetector(
@@ -405,7 +479,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Tipo de precio ─────────────────────────────
+            // ── Tipo de precio ─────────────────────────
             _seccion('TIPO DE PRECIO'),
             const SizedBox(height: 8),
             Row(
@@ -430,7 +504,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Carrito ────────────────────────────────────
+            // ── Carrito ────────────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -499,7 +573,8 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       FormatoNumero.monedaConSimbolo(
-                                          item.precioSegun(_tipoPrecio)),
+                                        item.precioSegun(_tipoPrecio),
+                                      ),
                                       style: const TextStyle(
                                           color: AppColors.textHint,
                                           fontSize: 11),
@@ -559,7 +634,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Condición de pago ──────────────────────────
+            // ── Condición de pago ──────────────────────
             _seccion('CONDICIÓN DE PAGO'),
             const SizedBox(height: 8),
             Row(
@@ -619,25 +694,19 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Ajustes adicionales ────────────────────────
+            // ── Ajustes adicionales ────────────────────
             _seccion('AJUSTES'),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: _campoNumerico(
-                    'Descuento %',
-                    _descuentoCtrl,
-                    Icons.discount_outlined,
-                  ),
+                      'Descuento %', _descuentoCtrl, Icons.discount_outlined),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _campoNumerico(
-                    'Flete',
-                    _fleteCtrl,
-                    Icons.local_shipping_outlined,
-                  ),
+                      'Flete', _fleteCtrl, Icons.local_shipping_outlined),
                 ),
               ],
             ),
@@ -646,18 +715,12 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
               children: [
                 Expanded(
                   child: _campoNumerico(
-                    'Impuesto %',
-                    _impuestoCtrl,
-                    Icons.percent,
-                  ),
+                      'Impuesto %', _impuestoCtrl, Icons.percent),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _campoNumerico(
-                    'Abono inicial',
-                    _abonoCtrl,
-                    Icons.payments_outlined,
-                  ),
+                      'Abono inicial', _abonoCtrl, Icons.payments_outlined),
                 ),
               ],
             ),
@@ -675,7 +738,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
             const SizedBox(height: 20),
 
-            // ── Totales ────────────────────────────────────
+            // ── Totales ────────────────────────────────
             _seccion('TOTALES'),
             const SizedBox(height: 8),
             Container(
@@ -731,7 +794,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
             const SizedBox(height: 24),
 
-            // ── Botón guardar ──────────────────────────────
+            // ── Botón guardar ──────────────────────────
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -742,8 +805,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
-                            color: Colors.white, strokeWidth: 2),
-                      )
+                            color: Colors.white, strokeWidth: 2))
                     : const Icon(Icons.save),
                 label: Text(
                   _isGuardando ? 'Guardando...' : 'Registrar Nota de Entrega',
@@ -762,7 +824,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     );
   }
 
-  // ── Widgets auxiliares ─────────────────────────────────────
+  // ── Widgets auxiliares ─────────────────────────────────
 
   Widget _seccion(String titulo) => Text(
         titulo,
@@ -778,63 +840,59 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     required String label,
     required bool selected,
     required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primaryBg : AppColors.surface,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: selected ? AppColors.primary : AppColors.border,
+  }) =>
+      GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primaryBg : AppColors.surface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.border,
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: selected ? AppColors.primary : AppColors.textSecondary,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              fontSize: 13,
+            ),
           ),
         ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: selected ? AppColors.primary : AppColors.textSecondary,
-            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 13,
-          ),
-        ),
-      ),
-    );
-  }
+      );
 
-  Widget _btnCantidad(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceAlt,
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: AppColors.border),
+  Widget _btnCantidad(IconData icon, VoidCallback onTap) => GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceAlt,
+            borderRadius: BorderRadius.circular(6),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Icon(icon, size: 14, color: AppColors.textSecondary),
         ),
-        child: Icon(icon, size: 14, color: AppColors.textSecondary),
-      ),
-    );
-  }
+      );
 
   Widget _campoNumerico(
     String label,
     TextEditingController ctrl,
     IconData icono,
-  ) {
-    return TextField(
-      controller: ctrl,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      onChanged: (_) => setState(() {}),
-      style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icono, size: 18),
-      ),
-    );
-  }
+  ) =>
+      TextField(
+        controller: ctrl,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        onChanged: (_) => setState(() {}),
+        style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icono, size: 18),
+        ),
+      );
 
   Widget _filaResumen(
     String label,
@@ -842,29 +900,44 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     bool negrita = false,
     bool grande = false,
     Color color = AppColors.textPrimary,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: grande ? 14 : 12,
-              fontWeight: grande ? FontWeight.w600 : FontWeight.normal,
-            ),
-          ),
-          Text(
-            valor,
-            style: TextStyle(
-              color: color,
-              fontSize: grande ? 16 : 13,
-              fontWeight: negrita ? FontWeight.bold : FontWeight.w500,
-            ),
-          ),
-        ],
+  }) =>
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label,
+                style: TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: grande ? 14 : 12,
+                  fontWeight: grande ? FontWeight.w600 : FontWeight.normal,
+                )),
+            Text(valor,
+                style: TextStyle(
+                  color: color,
+                  fontSize: grande ? 16 : 13,
+                  fontWeight: negrita ? FontWeight.bold : FontWeight.w500,
+                )),
+          ],
+        ),
+      );
+
+  Widget _chipTasa(String label, dynamic valor, Color color) {
+    final num = double.tryParse(valor?.toString() ?? '0') ?? 0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withAlpha(60)),
+      ),
+      child: Text(
+        '$label: ${num > 0 ? num.toStringAsFixed(2) : "--"}',
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
