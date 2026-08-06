@@ -5,7 +5,7 @@ import '../services/tasa_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_config.dart';
 import '../utils/app_info.dart';
-import '../utils/formato_numero.dart';
+//import '../utils/formato_numero.dart';
 
 class ConfiguracionScreen extends StatefulWidget {
   final UserModel user;

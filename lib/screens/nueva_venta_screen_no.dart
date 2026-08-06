@@ -21,10 +21,14 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
   final _ventaService = VentaService();
   final _tasaService = TasaService();
 
+  // Cliente
   int? _clienteIde;
   String? _clienteNombre;
+
+  // Fecha
   DateTime _fechaVenta = DateTime.now();
 
+  // Configuración
   int _tipoPrecio = 1;
   int _condicion = 0;
   int _diasCredito = 30;
@@ -35,8 +39,11 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
   final _abonoCtrl = TextEditingController(text: '0');
   final _observaCtrl = TextEditingController();
 
+  // Carrito
   final List<CarritoItem> _carrito = [];
   bool _isGuardando = false;
+
+  // Tasas
   Map _tasa = {};
 
   @override
@@ -62,6 +69,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
+  // ── Fecha helpers ────────────────────────────────────────
   String _fechaSql(DateTime d) => '${d.year}-'
       '${d.month.toString().padLeft(2, '0')}-'
       '${d.day.toString().padLeft(2, '0')}';
@@ -77,9 +85,12 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
         _fechaVenta.day == hoy.day;
   }
 
+  // ── Cálculos ─────────────────────────────────────────────
   double get _subtotal {
     double t = 0;
-    for (var item in _carrito) t += item.subtotal(_tipoPrecio);
+    for (var item in _carrito) {
+      t += item.subtotal(_tipoPrecio);
+    }
     return t;
   }
 
@@ -89,10 +100,14 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
   double get _abonoInicial => double.tryParse(_abonoCtrl.text) ?? 0;
 
   double get _subtotalConDescuento => _subtotal * (1 - _descuentoPct / 100);
+
   double get _montoImpuesto => _subtotalConDescuento * (_impuestoPct / 100);
+
   double get _total => _subtotalConDescuento + _montoImpuesto + _flete;
+
   double get _saldo => _total - _abonoInicial;
 
+  // ── Seleccionar fecha ────────────────────────────────────
   Future<void> _seleccionarFecha() async {
     final fecha = await showDatePicker(
       context: context,
@@ -112,6 +127,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
+  // ── Seleccionar cliente ──────────────────────────────────
   Future<void> _seleccionarCliente() async {
     final resultado = await Navigator.push<Map>(
       context,
@@ -127,23 +143,13 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
-  // ── CAMBIO 1: debug al agregar producto ─────────────────
+  // ── Agregar producto ─────────────────────────────────────
   Future<void> _agregarProducto() async {
     final item = await Navigator.push<CarritoItem>(
       context,
       MaterialPageRoute(builder: (_) => const BuscarProductoScreen()),
     );
     if (item != null && mounted) {
-      // DEBUG — ver si llega la foto
-      debugPrint('╔══ Item recibido del carrito ══╗');
-      debugPrint('Producto  : ${item.descripcion}');
-      debugPrint('productoIde: ${item.productoIde}');
-      debugPrint('foto      : "${item.foto}"');
-      debugPrint('tieneFoto : ${item.tieneFoto}');
-      debugPrint('existencia: ${item.existencia}');
-      debugPrint('cantidad  : ${item.cantidad}');
-      debugPrint('╚═══════════════════════════════╝');
-
       setState(() {
         final i = _carrito.indexWhere((e) => e.productoIde == item.productoIde);
         if (i >= 0) {
@@ -155,6 +161,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
+  // ── Editar cantidad del carrito ──────────────────────────
   Future<void> _editarCantidad(int index) async {
     final item = _carrito[index];
     final ctrl = TextEditingController(
@@ -239,6 +246,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
   void _eliminarItem(int index) => setState(() => _carrito.removeAt(index));
 
+  // ── Guardar venta ────────────────────────────────────────
   Future<void> _guardarVenta() async {
     if (_clienteIde == null) {
       _mostrarError('Selecciona un cliente');
@@ -320,6 +328,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     );
   }
 
+  // ── Hora formateada ──────────────────────────────────────
   String _horaCorta(dynamic hora) {
     final str = hora?.toString() ?? '';
     return str.length >= 5 ? str.substring(0, 5) : str;
@@ -345,6 +354,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Fecha y hora de última actualización
                     Row(
                       children: [
                         const Icon(Icons.update,
@@ -364,6 +374,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                       ],
                     ),
                     const SizedBox(height: 8),
+                    // Chips de tasas
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -394,7 +405,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
               const SizedBox(height: 16),
             ],
 
-            // ── Fecha ──────────────────────────────────
+            // ── Fecha de la nota de entrega ────────────
             _seccion('FECHA DE LA NOTA DE ENTREGA'),
             const SizedBox(height: 8),
             GestureDetector(
@@ -412,9 +423,11 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.calendar_today,
-                        color: _esHoy ? AppColors.textHint : AppColors.warning,
-                        size: 18),
+                    Icon(
+                      Icons.calendar_today,
+                      color: _esHoy ? AppColors.textHint : AppColors.warning,
+                      size: 18,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -442,9 +455,11 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                         ],
                       ),
                     ),
-                    Icon(Icons.edit_calendar,
-                        color: _esHoy ? AppColors.textHint : AppColors.warning,
-                        size: 18),
+                    Icon(
+                      Icons.edit_calendar,
+                      color: _esHoy ? AppColors.textHint : AppColors.warning,
+                      size: 18,
+                    ),
                   ],
                 ),
               ),
@@ -636,6 +651,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
+                                  // Cantidad editable
                                   GestureDetector(
                                     onTap: () => _editarCantidad(i),
                                     child: Container(
@@ -650,9 +666,11 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          const Icon(Icons.edit,
-                                              size: 10,
-                                              color: AppColors.primary),
+                                          const Icon(
+                                            Icons.edit,
+                                            size: 10,
+                                            color: AppColors.primary,
+                                          ),
                                           const SizedBox(width: 4),
                                           Text(
                                             item.cantidad % 1 == 0
@@ -1018,28 +1036,9 @@ class _ImagenCarrito extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) {
-            debugPrint('Error cargando imagen: $url');
-            return _placeholder();
-          },
-          // ── CAMBIO 2: loadingBuilder corregido ──────
-          loadingBuilder: (_, child, progress) {
-            if (progress == null) return child;
-            return SizedBox(
-              width: size,
-              height: size,
-              child: Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 1.5,
-                  color: AppColors.primary,
-                  value: progress.expectedTotalBytes != null
-                      ? progress.cumulativeBytesLoaded /
-                          progress.expectedTotalBytes!
-                      : null,
-                ),
-              ),
-            );
-          },
+          errorBuilder: (_, __, ___) => _placeholder(),
+          loadingBuilder: (_, child, progress) =>
+              progress == null ? child : _placeholder(),
         ),
       );
     }

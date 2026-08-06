@@ -1,5 +1,6 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'formato_numero.dart';
 
 class InventarioPdf {
   static Future<pw.Document> generar({
@@ -154,7 +155,7 @@ class InventarioPdf {
                     _celda(p['depart_descrip']?.toString() ?? '-'),
                     _celda(p['marca_descrip']?.toString() ?? '-'),
                     _celda(
-                      existencia.toStringAsFixed(0),
+                      FormatoNumero.decimal(existencia),
                       align: pw.Alignment.center,
                       color: sinStock
                           ? PdfColors.red700
@@ -257,18 +258,22 @@ class InventarioPdf {
             borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
           ),
           child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            crossAxisAlignment: pw.CrossAxisAlignment.stretch,
             children: [
               pw.Text(label,
                   style: const pw.TextStyle(
                       fontSize: 8, color: PdfColors.grey600)),
               pw.SizedBox(height: 4),
-              pw.Text(
-                valor,
-                style: pw.TextStyle(
-                  fontSize: 14,
-                  fontWeight: pw.FontWeight.bold,
-                  color: color,
+              pw.Align(
+                alignment: pw.Alignment.centerRight,
+                child: pw.Text(
+                  valor,
+                  textAlign: pw.TextAlign.right,
+                  style: pw.TextStyle(
+                    fontSize: 14,
+                    fontWeight: pw.FontWeight.bold,
+                    color: color,
+                  ),
                 ),
               ),
             ],
@@ -362,7 +367,7 @@ class InventarioPdf {
 
   static String _moneda(dynamic valor) {
     final num = double.tryParse(valor.toString()) ?? 0;
-    return '\$${num.toStringAsFixed(2)}';
+    return '\$${FormatoNumero.moneda(num)}';
   }
 
   static String _formatFechaHoy() {

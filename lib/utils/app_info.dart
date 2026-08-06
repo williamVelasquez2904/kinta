@@ -4,8 +4,8 @@ class AppInfo {
   //static const String _nombre = 'Kinta';
   //static const String _nombre = 'Kinta';
   static const String version =
-      '1.0.0 - Versión WEB JUL-2026'; // VERSION DE LA APP
-  static const int build = 29; // DIA DE COMPILACION
+      '1.0.0 - Versión WEB AGO-2026'; // VERSION DE LA APP
+  static const int build = 06; // DIA DE COMPILACION
 
   // Nombre base
   static String get nombre => AppConfig.appNombre;

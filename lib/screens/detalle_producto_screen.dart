@@ -3,6 +3,7 @@ import '../models/user_model.dart';
 import '../services/producto_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/formato_numero.dart';
+import '../utils/imagen_producto.dart';
 import 'form_producto_screen.dart';
 
 class DetalleProductoScreen extends StatefulWidget {
@@ -101,8 +102,7 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── Foto ────────────────────────────────
-                  if (_producto['produc_foto'] != null &&
-                      _producto['produc_foto'].toString().startsWith('http'))
+                  if (_producto['produc_foto'] != null)
                     Container(
                       width: double.infinity,
                       height: 220,
@@ -116,10 +116,12 @@ class _DetalleProductoScreenState extends State<DetalleProductoScreen> {
                         child: InteractiveViewer(
                           minScale: 0.5,
                           maxScale: 4.0,
-                          child: Image.network(
-                            _producto['produc_foto'],
+                          child: ImagenProducto.widget(
+                            _producto['produc_foto']?.toString(),
+                            width: double.infinity,
+                            height: 220,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Center(
+                            errorWidget: const Center(
                               child: Icon(Icons.image_not_supported,
                                   color: AppColors.textHint, size: 48),
                             ),

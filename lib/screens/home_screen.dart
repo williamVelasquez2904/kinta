@@ -21,6 +21,7 @@ import 'proveedores_screen.dart';
 import 'ajustes_screen.dart';
 import 'configuracion_screen.dart';
 import 'auditoria_screen.dart';
+import 'cuentas_cobrar_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel user;
@@ -141,6 +142,14 @@ class _HomeScreenState extends State<HomeScreen> {
         'colorBg': AppColors.successBg,
         'screen': GraficaProductosScreen(user: widget.user),
       },
+
+    {
+      'icon': Icons.account_balance_wallet,
+      'label': 'Cuentas x Cobrar',
+      'color': AppColors.error,
+      'colorBg': AppColors.errorBg,
+      'screen': CuentasCobrarScreen(user: widget.user),
+    },
 
     if (widget.user.esAdministrador)
       {

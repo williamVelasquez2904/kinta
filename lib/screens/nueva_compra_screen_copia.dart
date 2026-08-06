@@ -46,17 +46,11 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
     super.dispose();
   }
 
-  String _fechaSql(DateTime d) => '${d.year}-'
-      '${d.month.toString().padLeft(2, '0')}-'
-      '${d.day.toString().padLeft(2, '0')}';
+  String _fechaSql(DateTime d) =>
+      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-  String _fechaDisplay(DateTime d) => '${d.day.toString().padLeft(2, '0')}/'
-      '${d.month.toString().padLeft(2, '0')}/'
-      '${d.year}';
-
-  // ── Formato cantidad: entero si no tiene decimales ───────
-  String _fmtCant(double v) =>
-      v % 1 == 0 ? v.toStringAsFixed(0) : v.toStringAsFixed(2);
+  String _fechaDisplay(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
   Future<void> _cargarProveedores() async {
     final result =
@@ -102,6 +96,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
       return;
     }
 
+    // Si hay varios, mostrar lista para elegir
     Map? seleccionado;
     if (productos.length == 1) {
       seleccionado = productos.first;
@@ -133,13 +128,11 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
                 itemCount: productos.length,
                 itemBuilder: (_, i) {
                   final p = productos[i];
-                  final existen =
-                      double.tryParse(p['produc_existen'].toString()) ?? 0;
                   return ListTile(
                     title: Text(p['produc_descrip'] ?? ''),
                     subtitle: Text('Cód: ${p['produc_codigo'] ?? '-'}'),
                     trailing: Text(
-                      'Stock: ${_fmtCant(existen)}',
+                      'Stock: ${double.tryParse(p['produc_existen'].toString())?.toStringAsFixed(0) ?? '0'}',
                       style: const TextStyle(
                           color: AppColors.textHint, fontSize: 11),
                     ),
@@ -155,27 +148,33 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
     }
 
     if (seleccionado == null) return;
+
+    // Cargar detalle completo del producto para mostrar el costo actual.
     seleccionado = await _cargarDetalleProducto(seleccionado);
+
+    // ── Mostrar formulario con todos los campos ──────────────
     await _mostrarFormularioProducto(seleccionado);
   }
 
   Future<Map> _cargarDetalleProducto(Map producto) async {
     if (producto['produc_ide'] == null) return producto;
+
     try {
       final result = await _productoService
           .detalle(int.parse(producto['produc_ide'].toString()))
           .timeout(const Duration(seconds: 15));
+
       if (result['success'] == true && result['producto'] is Map) {
         return result['producto'] as Map;
       }
     } catch (_) {}
+
     return producto;
   }
 
   Future<void> _mostrarFormularioProducto(Map producto) async {
-    // ── Inicializar cantidad con decimales habilitados ───
+    // Controladores con valores actuales del producto
     final cantCtrl = TextEditingController(text: '1');
-
     final costoCtrl = TextEditingController(
         text:
             (double.tryParse(producto['produc_costo']?.toString() ?? '0') ?? 0)
@@ -217,7 +216,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── CANTIDAD ────────────────────────────────
+              // Cantidad
               const Text(
                 'CANTIDAD A INGRESAR',
                 style: TextStyle(
@@ -231,12 +230,10 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
               TextField(
                 controller: cantCtrl,
                 autofocus: true,
-                // ── Permite decimales ─────────────────────
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
                   labelText: 'Cantidad *',
-                  helperText: 'Permite decimales (ej: 1.5)',
                   prefixIcon: Icon(Icons.add_box_outlined, size: 18),
                 ),
               ),
@@ -245,7 +242,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
               const Divider(),
               const SizedBox(height: 8),
 
-              // ── PRECIOS ─────────────────────────────────
+              // Precios actuales (editables)
               const Text(
                 'PRECIOS ACTUALES (editables)',
                 style: TextStyle(
@@ -257,6 +254,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
               ),
               const SizedBox(height: 6),
 
+              // Costo
               TextField(
                 controller: costoCtrl,
                 keyboardType:
@@ -268,28 +266,31 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
               ),
               const SizedBox(height: 8),
 
+              // Precio 1
               TextField(
                 controller: precio1Ctrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
-                  labelText: 'Precio 1 (Bs.)',
+                  labelText: 'Precio 1 (COP)',
                   prefixIcon: Icon(Icons.attach_money, size: 18),
                 ),
               ),
               const SizedBox(height: 8),
 
+              // Precio 2
               TextField(
                 controller: precio2Ctrl,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(
-                  labelText: 'Precio 2',
+                  labelText: 'Precio 2 (Bs.)',
                   prefixIcon: Icon(Icons.attach_money, size: 18),
                 ),
               ),
               const SizedBox(height: 8),
 
+              // Precio USD
               TextField(
                 controller: precioUsdCtrl,
                 keyboardType:
@@ -314,8 +315,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
                     SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        'Los precios se actualizarán al '
-                        'confirmar la recepción de la compra.',
+                        'Los precios se actualizarán al confirmar la recepción de la compra.',
                         style:
                             TextStyle(color: AppColors.warning, fontSize: 11),
                       ),
@@ -335,17 +335,11 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
             icon: const Icon(Icons.add_shopping_cart, size: 16),
             label: const Text('Agregar'),
             onPressed: () {
-              // ── Parsear con decimales ─────────────────
-              final cant =
-                  double.tryParse(cantCtrl.text.replaceAll(',', '.')) ?? 0;
-              final costo =
-                  double.tryParse(costoCtrl.text.replaceAll(',', '.')) ?? 0;
-              final precio1 =
-                  double.tryParse(precio1Ctrl.text.replaceAll(',', '.')) ?? 0;
-              final precio2 =
-                  double.tryParse(precio2Ctrl.text.replaceAll(',', '.')) ?? 0;
-              final precioUsd =
-                  double.tryParse(precioUsdCtrl.text.replaceAll(',', '.')) ?? 0;
+              final cant = double.tryParse(cantCtrl.text) ?? 0;
+              final costo = double.tryParse(costoCtrl.text) ?? 0;
+              final precio1 = double.tryParse(precio1Ctrl.text) ?? 0;
+              final precio2 = double.tryParse(precio2Ctrl.text) ?? 0;
+              final precioUsd = double.tryParse(precioUsdCtrl.text) ?? 0;
 
               if (cant <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -362,6 +356,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
                     c['produc_ide'].toString() ==
                     producto['produc_ide'].toString());
                 if (idx >= 0) {
+                  // Actualizar si ya existe
                   _carrito[idx]['cantidad'] = cant;
                   _carrito[idx]['costo'] = costo;
                   _carrito[idx]['precio1'] = precio1;
@@ -390,6 +385,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
 
   void _editarItem(int index) {
     final item = _carrito[index];
+    // Crear un mapa compatible con el formato de producto
     final productoMock = {
       'produc_ide': item['produc_ide'],
       'produc_descrip': item['descripcion'],
@@ -500,13 +496,6 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_proveNombre ?? 'Nueva compra'),
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
-        elevation: 0,
-        centerTitle: false,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -592,7 +581,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
 
             const SizedBox(height: 16),
 
-            // ── Referencia ─────────────────────────────────
+            // ── Documento ──────────────────────────────────
             _seccion('REFERENCIA'),
             const SizedBox(height: 8),
             TextField(
@@ -660,11 +649,9 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
                       Icon(Icons.inventory_2_outlined,
                           color: AppColors.textHint, size: 36),
                       SizedBox(height: 8),
-                      Text(
-                        'Sin productos agregados',
-                        style: TextStyle(
-                            color: AppColors.textSecondary, fontSize: 12),
-                      ),
+                      Text('Sin productos agregados',
+                          style: TextStyle(
+                              color: AppColors.textSecondary, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -706,37 +693,33 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 4),
+                                    // Resumen de precios
                                     Wrap(
                                       spacing: 8,
                                       runSpacing: 2,
                                       children: [
-                                        // ── Cantidad con decimales ─
                                         _chipPrecio(
-                                          'Cant',
-                                          _fmtCant(cant),
-                                          AppColors.info,
-                                        ),
+                                            'Cant',
+                                            cant.toStringAsFixed(0),
+                                            AppColors.info),
                                         _chipPrecio(
-                                          'Costo',
-                                          FormatoNumero.monedaConSimbolo(costo),
-                                          AppColors.warning,
-                                        ),
+                                            'Costo',
+                                            FormatoNumero.monedaConSimbolo(
+                                                costo),
+                                            AppColors.warning),
                                         _chipPrecio(
-                                          'P1',
-                                          FormatoNumero.monedaConSimbolo(
-                                              precio1),
-                                          AppColors.primary,
-                                        ),
+                                            'P1',
+                                            FormatoNumero.monedaConSimbolo(
+                                                precio1),
+                                            AppColors.primary),
                                         _chipPrecio(
-                                          'P2',
-                                          FormatoNumero.moneda(precio2),
-                                          AppColors.purple,
-                                        ),
+                                            'Bs.',
+                                            FormatoNumero.moneda(precio2),
+                                            AppColors.purple),
                                         _chipPrecio(
-                                          'USD',
-                                          '\$${precioUsd.toStringAsFixed(2)}',
-                                          AppColors.success,
-                                        ),
+                                            'USD',
+                                            '\$${precioUsd.toStringAsFixed(2)}',
+                                            AppColors.success),
                                       ],
                                     ),
                                   ],
@@ -757,6 +740,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
                                   Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
+                                      // Editar
                                       GestureDetector(
                                         onTap: () => _editarItem(i),
                                         child: Container(
@@ -765,6 +749,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
                                               color: AppColors.info, size: 18),
                                         ),
                                       ),
+                                      // Eliminar
                                       GestureDetector(
                                         onTap: () => _eliminarItem(i),
                                         child: Container(
@@ -792,7 +777,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
 
             const SizedBox(height: 16),
 
-            // ── Ajustes ────────────────────────────────────
+            // ── Impuesto y observaciones ───────────────────
             _seccion('AJUSTES'),
             const SizedBox(height: 8),
             TextField(
@@ -836,8 +821,7 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
                   _filaTotal('Subtotal (costo)',
                       FormatoNumero.monedaConSimbolo(_subtotal)),
                   _filaTotal(
-                    'Impuesto '
-                        '(${_impuestoPct.toStringAsFixed(0)}%)',
+                    'Impuesto (${_impuestoPct.toStringAsFixed(0)}%)',
                     '+${FormatoNumero.monedaConSimbolo(_total - _subtotal)}',
                     color: AppColors.info,
                   ),
@@ -882,8 +866,6 @@ class _NuevaCompraScreenState extends State<NuevaCompraScreen> {
       ),
     );
   }
-
-  // ── Widgets auxiliares ─────────────────────────────────
 
   Widget _seccion(String t) => Text(t,
       style: const TextStyle(

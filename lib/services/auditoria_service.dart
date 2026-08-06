@@ -245,4 +245,19 @@ class AuditoriaService {
         'busqueda': busqueda,
         'resultado': resultado,
       });
+  Future<Map<String, dynamic>> eliminar({
+    required int usuaIde,
+    required String criterio,
+    String? fechaDesde,
+    String? fechaHasta,
+    String? modulo,
+  }) =>
+      _post({
+        'accion': 'eliminar',
+        'usua_ide': usuaIde,
+        'criterio': criterio,
+        if (fechaDesde != null) 'fecha_desde': fechaDesde,
+        if (fechaHasta != null) 'fecha_hasta': fechaHasta,
+        if (modulo != null) 'modulo': modulo,
+      });
 }

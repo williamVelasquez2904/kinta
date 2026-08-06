@@ -7,10 +7,15 @@ class AppConfig {
   //static const String clienteId = 'nicely'; // Kinta0008
   //static const String clienteId = 'parmol'; // Kinta0004
   //static const String clienteId = 'aromas'; // Kinta0005
-  static const String clienteId = 'FerrehogarMayho'; // Kinta0006
+  //static const String clienteId = 'FerrehogarMayho'; // Kinta0006
   //static const String clienteId = 'nestor'; // Kinta0008
   //static const String clienteId = 'jeanz'; // Kinta0009 Jean Carlos Leche
-  //static const String clienteId = 'demo1'; // kintatie_kinta_demo1
+  static const String clienteId = 'demo1'; // kintatie_kinta_demo1
+  //static const String clienteId = 'demo3'; // kintatie_kinta0003
+  //static const String clienteId = 'demo4'; //charc R & R
+  //static const String clienteId = 'demo5'; // charcuteria libertador
+  //static const String clienteId = 'demo10'; // jESUS pULIDO
+  //static const String clienteId = 'tienda_sara'; // Ana Tienda Sara
 
   //FerrehogarMayho
 

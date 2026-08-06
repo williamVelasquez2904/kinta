@@ -6,8 +6,10 @@ class CarritoItem {
   final double precio1;
   final double precioDolar;
   final double costo;
+  final String foto;
   double cantidad;
   double descuento;
+  bool get tieneFoto => foto.isNotEmpty;
 
   CarritoItem({
     required this.productoIde,
@@ -17,6 +19,7 @@ class CarritoItem {
     required this.precio1,
     required this.precioDolar,
     required this.costo,
+    this.foto = '',
     this.cantidad = 1,
     this.descuento = 0,
   });
@@ -37,6 +40,7 @@ class CarritoItem {
       precio1: double.tryParse(json['produc_precio1'].toString()) ?? 0,
       precioDolar: double.tryParse(json['produc_preciodolar'].toString()) ?? 0,
       costo: double.tryParse(json['produc_costo']?.toString() ?? '0') ?? 0,
+      foto: json['produc_foto']?.toString() ?? '', // ← NUEVO
     );
   }
 }

@@ -3,6 +3,7 @@ import '../models/user_model.dart';
 import '../services/producto_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/formato_numero.dart';
+import '../utils/imagen_producto.dart';
 import 'detalle_producto_screen.dart';
 import 'form_producto_screen.dart';
 
@@ -303,21 +304,14 @@ class _ProductosScreenState extends State<ProductosScreen> {
                                               ClipRRect(
                                                 borderRadius:
                                                     BorderRadius.circular(8),
-                                                child: (p['produc_foto'] !=
-                                                            null &&
-                                                        p['produc_foto']
-                                                            .toString()
-                                                            .startsWith('http'))
-                                                    ? Image.network(
-                                                        p['produc_foto'],
-                                                        width: 48,
-                                                        height: 48,
-                                                        fit: BoxFit.cover,
-                                                        errorBuilder: (_, __,
-                                                                ___) =>
-                                                            _iconoProducto(),
-                                                      )
-                                                    : _iconoProducto(),
+                                                child: ImagenProducto.widget(
+                                                  p['produc_foto']?.toString(),
+                                                  width: 48,
+                                                  height: 48,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: _iconoProducto(),
+                                                  errorWidget: _iconoProducto(),
+                                                ),
                                               ),
 
                                               const SizedBox(width: 12),
@@ -401,7 +395,9 @@ class _ProductosScreenState extends State<ProductosScreen> {
                                             ),
                                           ),
                                           Text(
-                                            existen.toStringAsFixed(0),
+                                            existen % 1 == 0
+                                                ? existen.toStringAsFixed(0)
+                                                : existen.toStringAsFixed(2),
                                             style: TextStyle(
                                               color: sinStock
                                                   ? AppColors.error

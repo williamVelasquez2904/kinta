@@ -11,4 +11,8 @@ class FormatoNumero {
   static String monedaConSimbolo(double valor) {
     return '\$${_formato.format(valor)}';
   }
+
+  static String decimal(double valor) {
+    return _formato.format(valor);
+  }
 }

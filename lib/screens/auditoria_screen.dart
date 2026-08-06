@@ -47,11 +47,13 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
     super.dispose();
   }
 
-  String _fechaSql(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  String _fechaSql(DateTime d) => '${d.year}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
 
-  String _fechaDisplay(DateTime d) =>
-      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  String _fechaDisplay(DateTime d) => '${d.day.toString().padLeft(2, '0')}/'
+      '${d.month.toString().padLeft(2, '0')}/'
+      '${d.year}';
 
   Future<void> _seleccionarFecha(bool esDesde) async {
     final fecha = await showDatePicker(
@@ -99,6 +101,304 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
     setState(() => _isLoading = false);
   }
 
+  // ── Opciones de eliminación ──────────────────────────
+  Future<void> _mostrarOpcionesEliminar() async {
+    await showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'ELIMINAR REGISTROS',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _opcionEliminar(
+              icono: Icons.date_range,
+              label: 'Por rango de fechas',
+              subtitulo: 'Elimina registros entre dos fechas',
+              color: AppColors.info,
+              onTap: () async {
+                Navigator.pop(context);
+                await _eliminarPorFechas();
+              },
+            ),
+            const SizedBox(height: 8),
+            _opcionEliminar(
+              icono: Icons.category_outlined,
+              label: 'Por módulo',
+              subtitulo: 'Elimina todos los registros de un módulo',
+              color: AppColors.warning,
+              onTap: () async {
+                Navigator.pop(context);
+                await _eliminarPorModulo();
+              },
+            ),
+            const SizedBox(height: 8),
+            _opcionEliminar(
+              icono: Icons.error_outline,
+              label: 'Solo errores',
+              subtitulo: 'Limpia todos los registros con resultado ERROR',
+              color: AppColors.error,
+              onTap: () async {
+                Navigator.pop(context);
+                await _confirmarEliminar(
+                  criterio: 'errores',
+                  mensaje: '¿Eliminar todos los registros de error?',
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            _opcionEliminar(
+              icono: Icons.delete_forever_outlined,
+              label: 'Limpiar todo el historial',
+              subtitulo: 'Elimina TODOS los registros de auditoría',
+              color: AppColors.error,
+              onTap: () async {
+                Navigator.pop(context);
+                await _confirmarEliminar(
+                  criterio: 'todo',
+                  mensaje: '¿Eliminar TODO el historial de auditoría?\n'
+                      'Esta acción no se puede deshacer.',
+                );
+              },
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _opcionEliminar({
+    required IconData icono,
+    required String label,
+    required String subtitulo,
+    required Color color,
+    required VoidCallback onTap,
+  }) =>
+      Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              border: Border.all(color: color.withAlpha(60)),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Icon(icono, color: color, size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(label,
+                          style: TextStyle(
+                            color: color,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          )),
+                      Text(subtitulo,
+                          style: const TextStyle(
+                              color: AppColors.textHint, fontSize: 11)),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: color, size: 18),
+              ],
+            ),
+          ),
+        ),
+      );
+
+  Future<void> _eliminarPorFechas() async {
+    DateTime desde = DateTime.now().subtract(const Duration(days: 30));
+    DateTime hasta = DateTime.now();
+
+    await showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          title: const Text('Eliminar por fechas'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () async {
+                  final f = await showDatePicker(
+                    context: ctx,
+                    initialDate: desde,
+                    firstDate: DateTime(2024),
+                    lastDate: DateTime.now(),
+                  );
+                  if (f != null) setDlg(() => desde = f);
+                },
+                child: _campoFechaDialog('Desde', _fechaDisplay(desde)),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () async {
+                  final f = await showDatePicker(
+                    context: ctx,
+                    initialDate: hasta,
+                    firstDate: DateTime(2024),
+                    lastDate: DateTime.now(),
+                  );
+                  if (f != null) setDlg(() => hasta = f);
+                },
+                child: _campoFechaDialog('Hasta', _fechaDisplay(hasta)),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final result = await _service.eliminar(
+                  usuaIde: widget.user.usuaIde,
+                  criterio: 'fechas',
+                  fechaDesde: _fechaSql(desde),
+                  fechaHasta: _fechaSql(hasta),
+                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(result['message'] ?? ''),
+                    backgroundColor: result['success'] == true
+                        ? AppColors.success
+                        : AppColors.error,
+                  ));
+                  if (result['success'] == true) _buscar();
+                }
+              },
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _eliminarPorModulo() async {
+    String moduloSel = 'SESION';
+
+    await showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setDlg) => AlertDialog(
+          title: const Text('Eliminar por módulo'),
+          content: DropdownButtonFormField<String>(
+            value: moduloSel,
+            dropdownColor: AppColors.surface,
+            items: _modulos
+                .where((m) => m['valor']!.isNotEmpty)
+                .map((m) => DropdownMenuItem<String>(
+                      value: m['valor'],
+                      child: Text(m['label']!,
+                          style: const TextStyle(color: AppColors.textPrimary)),
+                    ))
+                .toList(),
+            onChanged: (v) => setDlg(() => moduloSel = v ?? 'SESION'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final result = await _service.eliminar(
+                  usuaIde: widget.user.usuaIde,
+                  criterio: 'modulo',
+                  modulo: moduloSel,
+                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(result['message'] ?? ''),
+                    backgroundColor: result['success'] == true
+                        ? AppColors.success
+                        : AppColors.error,
+                  ));
+                  if (result['success'] == true) _buscar();
+                }
+              },
+              child: const Text('Eliminar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmarEliminar({
+    required String criterio,
+    required String mensaje,
+  }) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: AppColors.error),
+            SizedBox(width: 8),
+            Text('Confirmar eliminación'),
+          ],
+        ),
+        content: Text(mensaje),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (ok == true && mounted) {
+      final result = await _service.eliminar(
+        usuaIde: widget.user.usuaIde,
+        criterio: criterio,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(result['message'] ?? ''),
+          backgroundColor:
+              result['success'] == true ? AppColors.success : AppColors.error,
+        ));
+        if (result['success'] == true) _buscar();
+      }
+    }
+  }
+
+  // ── Colores e íconos ─────────────────────────────────
   Color _colorAccion(String accion) {
     switch (accion) {
       case 'LOGIN':
@@ -153,7 +453,9 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
     if (fecha == null) return '-';
     final str = fecha.toString();
     if (str.length < 16) return str;
-    return '${str.substring(8, 10)}/${str.substring(5, 7)}/${str.substring(0, 4)}'
+    return '${str.substring(8, 10)}/'
+        '${str.substring(5, 7)}/'
+        '${str.substring(0, 4)}'
         ' ${str.substring(11, 16)}';
   }
 
@@ -169,7 +471,8 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
               Icon(Icons.lock_outline, color: AppColors.error, size: 52),
               SizedBox(height: 12),
               Text(
-                'Solo el Administrador del Sistema\npuede ver la auditoría',
+                'Solo el Administrador del Sistema\n'
+                'puede ver la auditoría',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppColors.error),
               ),
@@ -183,12 +486,21 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
       appBar: AppBar(
         title: Text('Auditoría ($_total)'),
         actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _buscar),
+          // ── BOTÓN ELIMINAR ────────────────────────────
+          IconButton(
+            icon: const Icon(Icons.delete_sweep_outlined),
+            tooltip: 'Limpiar registros',
+            onPressed: _mostrarOpcionesEliminar,
+          ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _buscar,
+          ),
         ],
       ),
       body: Column(
         children: [
-          // ── Filtros ────────────────────────────────────
+          // ── Filtros ───────────────────────────────────
           Container(
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(14),
@@ -203,12 +515,14 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
                 Row(
                   children: [
                     Expanded(
-                        child: _campoFecha('Desde', _fechaDesde,
-                            () => _seleccionarFecha(true))),
+                      child: _campoFecha(
+                          'Desde', _fechaDesde, () => _seleccionarFecha(true)),
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
-                        child: _campoFecha('Hasta', _fechaHasta,
-                            () => _seleccionarFecha(false))),
+                      child: _campoFecha(
+                          'Hasta', _fechaHasta, () => _seleccionarFecha(false)),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -346,7 +660,7 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Ícono
+                                  // Ícono acción
                                   Container(
                                     width: 38,
                                     height: 38,
@@ -368,7 +682,7 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        // Acción + módulo
+                                        // Badge acción + módulo
                                         Row(
                                           children: [
                                             Container(
@@ -401,9 +715,11 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
                                             ),
                                             if (esError) ...[
                                               const SizedBox(width: 6),
-                                              const Icon(Icons.error_outline,
-                                                  color: AppColors.error,
-                                                  size: 14),
+                                              const Icon(
+                                                Icons.error_outline,
+                                                color: AppColors.error,
+                                                size: 14,
+                                              ),
                                             ],
                                           ],
                                         ),
@@ -412,7 +728,8 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
 
                                         // Usuario
                                         Text(
-                                          '${r['audit_usua_nombre'] ?? '-'} (@${r['audit_usua_login'] ?? '-'})',
+                                          '${r['audit_usua_nombre'] ?? '-'} '
+                                          '(@${r['audit_usua_login'] ?? '-'})',
                                           style: const TextStyle(
                                             color: AppColors.textPrimary,
                                             fontWeight: FontWeight.w600,
@@ -433,7 +750,7 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
 
                                         const SizedBox(height: 4),
 
-                                        // Meta
+                                        // Fecha + dispositivo
                                         Row(
                                           children: [
                                             const Icon(Icons.access_time,
@@ -463,7 +780,7 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
                                           ],
                                         ),
 
-                                        // Error msg
+                                        // Mensaje de error
                                         if (esError &&
                                             (r['audit_error_msg'] ?? '')
                                                 .isNotEmpty)
@@ -500,7 +817,13 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
     );
   }
 
-  Widget _campoFecha(String label, DateTime fecha, VoidCallback onTap) =>
+  // ── Widgets auxiliares ─────────────────────────────────
+
+  Widget _campoFecha(
+    String label,
+    DateTime fecha,
+    VoidCallback onTap,
+  ) =>
       GestureDetector(
         onTap: onTap,
         child: Container(
@@ -535,6 +858,27 @@ class _AuditoriaScreenState extends State<AuditoriaScreen> {
               ),
             ],
           ),
+        ),
+      );
+
+  Widget _campoFechaDialog(String label, String valor) => Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceAlt,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.calendar_today,
+                color: AppColors.textHint, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              '$label: $valor',
+              style:
+                  const TextStyle(color: AppColors.textPrimary, fontSize: 13),
+            ),
+          ],
         ),
       );
 

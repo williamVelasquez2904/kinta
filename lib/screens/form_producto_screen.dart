@@ -7,6 +7,7 @@ import '../models/user_model.dart';
 import '../services/producto_service.dart';
 import '../services/auditoria_service.dart';
 import '../theme/app_theme.dart';
+import '../utils/imagen_producto.dart';
 
 class FormProductoScreen extends StatefulWidget {
   final UserModel user;
@@ -106,12 +107,46 @@ class _FormProductoScreenState extends State<FormProductoScreen> {
           await _service.cargarListas().timeout(const Duration(seconds: 15));
 
       if (listas['success'] == true) {
+        final marcas = listas['marcas'] ?? [];
+        final modelos = listas['modelos'] ?? [];
+        final unidades = listas['unidades'] ?? [];
+        final impuestos = listas['impuestos'] ?? [];
+        final departamentos = listas['departamentos'] ?? [];
+
+        final defaultDept = (!_esEdicion &&
+                departamentos.any((d) => d['depart_ide']?.toString() == '1'))
+            ? 1
+            : _departamentoIde;
+        final defaultMarca = (!_esEdicion &&
+                marcas.any((m) => m['marca_ide']?.toString() == '1'))
+            ? 1
+            : _marcaIde;
+        final defaultModelo = (!_esEdicion &&
+                modelos.any((m) => m['modelo_ide']?.toString() == '1'))
+            ? 1
+            : _modeloIde;
+        final defaultUnid = (!_esEdicion &&
+                unidades.any((u) => u['unidmed_ide']?.toString() == '7'))
+            ? 7
+            : _unidmedIde;
+        final defaultImpuesto = (!_esEdicion &&
+                impuestos.any((i) => i['impuesto_ide']?.toString() == '1'))
+            ? 1
+            : _impuestoIde;
+
         setState(() {
-          _marcas = listas['marcas'] ?? [];
-          _modelos = listas['modelos'] ?? [];
-          _unidades = listas['unidades'] ?? [];
-          _impuestos = listas['impuestos'] ?? [];
-          _departamentos = listas['departamentos'] ?? [];
+          _marcas = marcas;
+          _modelos = modelos;
+          _unidades = unidades;
+          _impuestos = impuestos;
+          _departamentos = departamentos;
+          if (!_esEdicion) {
+            _departamentoIde = defaultDept;
+            _marcaIde = defaultMarca;
+            _modeloIde = defaultModelo;
+            _unidmedIde = defaultUnid;
+            _impuestoIde = defaultImpuesto;
+          }
         });
       } else {
         if (mounted) {
@@ -152,10 +187,9 @@ class _FormProductoScreenState extends State<FormProductoScreen> {
             _unidmedIde = _toIntNullable(p['produc_unidmed']);
             _impuestoIde = _toIntNullable(p['produc_impuesto']);
             _departamentoIde = _toIntNullable(p['produc_departamento']);
+            final foto = p['produc_foto']?.toString();
             _fotoActual =
-                p['produc_foto']?.toString().startsWith('http') == true
-                    ? p['produc_foto'].toString()
-                    : null;
+                (foto != null && foto.trim().isNotEmpty) ? foto : null;
           });
         } else {
           if (mounted) {
@@ -350,13 +384,12 @@ class _FormProductoScreenState extends State<FormProductoScreen> {
                                         fit: BoxFit.cover,
                                       )
                                 : _fotoActual != null
-                                    ? Image.network(
+                                    ? ImagenProducto.widget(
                                         _fotoActual!,
                                         width: 150,
                                         height: 150,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            _iconoFoto(),
+                                        errorWidget: _iconoFoto(),
                                       )
                                     : _iconoFoto(),
                           ),

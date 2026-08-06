@@ -481,7 +481,7 @@ class _ReporteInventarioScreenState extends State<ReporteInventarioScreen> {
                                                 BorderRadius.circular(20),
                                           ),
                                           child: Text(
-                                            existencia.toStringAsFixed(0),
+                                            FormatoNumero.decimal(existencia),
                                             style: TextStyle(
                                               color: stockColor,
                                               fontWeight: FontWeight.bold,
@@ -632,7 +632,7 @@ class _ReporteInventarioScreenState extends State<ReporteInventarioScreen> {
         border: Border.all(color: AppColors.border),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
@@ -644,12 +644,16 @@ class _ReporteInventarioScreenState extends State<ReporteInventarioScreen> {
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            valor,
-            style: TextStyle(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              valor,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: color,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
