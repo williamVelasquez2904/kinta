@@ -80,6 +80,48 @@ class AuthService {
     return null;
   }
 
+  Future<Map<String, dynamic>> cambiarClave({
+    required int usuaIde,
+    required String claveActual,
+    required String claveNueva,
+    required String claveConfirm,
+  }) async {
+    try {
+      final body = {
+        'cliente_id': AppConfig.clienteId,
+        'usua_ide': usuaIde,
+        'clave_actual': claveActual,
+        'clave_nueva': claveNueva,
+        'clave_confirm': claveConfirm,
+      };
+
+      final response = await http
+          .post(
+            Uri.parse(AppConfig.api('api_cambiar_clave.php')),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        if (response.body.trim().isEmpty) {
+          return {'success': false, 'message': 'Respuesta vacía'};
+        }
+        try {
+          return jsonDecode(response.body);
+        } catch (e) {
+          return {
+            'success': false,
+            'message': 'Error del servidor: ${response.body}'
+          };
+        }
+      }
+      return {'success': false, 'message': 'Error HTTP ${response.statusCode}'};
+    } catch (e) {
+      return {'success': false, 'message': 'Error: $e'};
+    }
+  }
+
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     final user = await getSesionActiva();

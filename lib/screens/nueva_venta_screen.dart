@@ -3,6 +3,7 @@ import '../models/user_model.dart';
 import '../models/carrito_item.dart';
 import '../services/venta_service.dart';
 import '../services/tasa_service.dart';
+import '../services/cliente_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/formato_numero.dart';
 import 'seleccionar_cliente_screen.dart';
@@ -20,6 +21,7 @@ class NuevaVentaScreen extends StatefulWidget {
 class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
   final _ventaService = VentaService();
   final _tasaService = TasaService();
+  final _clienteService = ClienteService();
 
   int? _clienteIde;
   String? _clienteNombre;
@@ -93,6 +95,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
   double get _total => _subtotalConDescuento + _montoImpuesto + _flete;
   double get _saldo => _total - _abonoInicial;
 
+  // ── Seleccionar fecha ────────────────────────────────────
   Future<void> _seleccionarFecha() async {
     final fecha = await showDatePicker(
       context: context,
@@ -112,6 +115,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
+  // ── Seleccionar cliente ──────────────────────────────────
   Future<void> _seleccionarCliente() async {
     final resultado = await Navigator.push<Map>(
       context,
@@ -127,21 +131,168 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
-  // ── CAMBIO 1: debug al agregar producto ─────────────────
+  // ── Cliente rápido ───────────────────────────────────────
+  Future<void> _clienteRapido() async {
+    final cedulaCtrl = TextEditingController();
+    final nombreCtrl = TextEditingController();
+
+    await showDialog(
+      context: context,
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setDlg) {
+          bool guardando = false;
+          return AlertDialog(
+            title: const Row(
+              children: [
+                Icon(Icons.person_add_outlined,
+                    color: AppColors.primary, size: 20),
+                SizedBox(width: 8),
+                Text(
+                  'Cliente rápido',
+                  style: TextStyle(color: AppColors.primary, fontSize: 15),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Cédula
+                TextField(
+                  controller: cedulaCtrl,
+                  autofocus: true,
+                  keyboardType: TextInputType.text,
+                  textCapitalization: TextCapitalization.characters,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600),
+                  decoration: const InputDecoration(
+                    labelText: 'Cédula / RIF *',
+                    prefixIcon: Icon(Icons.badge_outlined, size: 18),
+                    helperText: 'Ej: V-12345678',
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Nombre
+                TextField(
+                  controller: nombreCtrl,
+                  textCapitalization: TextCapitalization.words,
+                  style: const TextStyle(
+                      color: AppColors.textPrimary, fontSize: 14),
+                  decoration: const InputDecoration(
+                    labelText: 'Nombre completo *',
+                    prefixIcon: Icon(Icons.person_outline, size: 18),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              StatefulBuilder(
+                builder: (ctx2, setBtn) => ElevatedButton.icon(
+                  icon: guardando
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : const Icon(Icons.save, size: 16),
+                  label: Text(guardando ? 'Guardando...' : 'Guardar'),
+                  onPressed: guardando
+                      ? null
+                      : () async {
+                          final cedula = cedulaCtrl.text.trim();
+                          final nombre = nombreCtrl.text.trim();
+
+                          if (cedula.isEmpty || nombre.isEmpty) {
+                            ScaffoldMessenger.of(ctx)
+                                .showSnackBar(const SnackBar(
+                              content: Text('Cédula y nombre son requeridos'),
+                              backgroundColor: AppColors.error,
+                            ));
+                            return;
+                          }
+
+                          setBtn(() => guardando = true);
+
+                          final result = await _clienteService.crear(
+                            usuaIde: widget.user.usuaIde,
+                            datos: {
+                              'clien_tipcli': 'V',
+                              'clien_numiden': cedula,
+                              'clien_nombre1': nombre,
+                              'clien_nombre2': '',
+                              'clien_apelli1': '',
+                              'clien_apelli2': '',
+                              'clien_fecnaci': '2000-01-01',
+                              'clien_direcci': '',
+                              'clien_ciudad': '',
+                              'clien_pais': '',
+                              'clien_telmovi': '',
+                              'clien_telmovi2': '',
+                              'clien_correo': '',
+                              'clien_contriespec': 0,
+                              'clien_vendedor': 1,
+                              'clien_empresa_envio': 'Delivery',
+                              'clien_codigo': '',
+                              'clien_codigo_oficina': '',
+                              'clien_nombre_oficina': '',
+                            },
+                          );
+
+                          setBtn(() => guardando = false);
+
+                          if (!mounted) return;
+
+                          if (result['success'] == true) {
+                            setState(() {
+                              _clienteIde = int.tryParse(
+                                      result['clien_ide'].toString()) ??
+                                  0;
+                              _clienteNombre = nombre;
+                            });
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text(
+                                  'Cliente "$nombre" creado y seleccionado'),
+                              backgroundColor: AppColors.success,
+                            ));
+                          } else {
+                            ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+                              content: Text(result['message'] ??
+                                  'Error al crear cliente'),
+                              backgroundColor: AppColors.error,
+                            ));
+                          }
+                        },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  // ── Agregar producto ─────────────────────────────────────
   Future<void> _agregarProducto() async {
     final item = await Navigator.push<CarritoItem>(
       context,
       MaterialPageRoute(builder: (_) => const BuscarProductoScreen()),
     );
     if (item != null && mounted) {
-      // DEBUG — ver si llega la foto
       debugPrint('╔══ Item recibido del carrito ══╗');
-      debugPrint('Producto  : ${item.descripcion}');
+      debugPrint('Producto   : ${item.descripcion}');
       debugPrint('productoIde: ${item.productoIde}');
-      debugPrint('foto      : "${item.foto}"');
-      debugPrint('tieneFoto : ${item.tieneFoto}');
-      debugPrint('existencia: ${item.existencia}');
-      debugPrint('cantidad  : ${item.cantidad}');
+      debugPrint('foto       : "${item.foto}"');
+      debugPrint('tieneFoto  : ${item.tieneFoto}');
+      debugPrint('existencia : ${item.existencia}');
+      debugPrint('cantidad   : ${item.cantidad}');
       debugPrint('╚═══════════════════════════════╝');
 
       setState(() {
@@ -155,6 +306,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
     }
   }
 
+  // ── Editar cantidad del carrito ──────────────────────────
   Future<void> _editarCantidad(int index) async {
     final item = _carrito[index];
     final ctrl = TextEditingController(
@@ -239,6 +391,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
 
   void _eliminarItem(int index) => setState(() => _carrito.removeAt(index));
 
+  // ── Guardar venta ────────────────────────────────────────
   Future<void> _guardarVenta() async {
     if (_clienteIde == null) {
       _mostrarError('Selecciona un cliente');
@@ -469,56 +622,88 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
             // ── Cliente ────────────────────────────────
             _seccion('CLIENTE'),
             const SizedBox(height: 8),
-            GestureDetector(
-              onTap: _seleccionarCliente,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: _clienteIde == null
-                        ? AppColors.border
-                        : AppColors.primary,
-                    width: _clienteIde == null ? 1 : 1.5,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _clienteIde == null ? Icons.person_outline : Icons.person,
-                      color: _clienteIde == null
-                          ? AppColors.textHint
-                          : AppColors.primary,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _clienteNombre ?? 'Toca para seleccionar cliente',
-                        style: TextStyle(
+            Row(
+              children: [
+                // Selector cliente
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _seleccionarCliente,
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
                           color: _clienteIde == null
-                              ? AppColors.textHint
-                              : AppColors.textPrimary,
-                          fontWeight: _clienteIde == null
-                              ? FontWeight.normal
-                              : FontWeight.w600,
-                          fontSize: 14,
+                              ? AppColors.border
+                              : AppColors.primary,
+                          width: _clienteIde == null ? 1 : 1.5,
                         ),
                       ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _clienteIde == null
+                                ? Icons.person_outline
+                                : Icons.person,
+                            color: _clienteIde == null
+                                ? AppColors.textHint
+                                : AppColors.primary,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              _clienteNombre ?? 'Toca para seleccionar',
+                              style: TextStyle(
+                                color: _clienteIde == null
+                                    ? AppColors.textHint
+                                    : AppColors.textPrimary,
+                                fontWeight: _clienteIde == null
+                                    ? FontWeight.normal
+                                    : FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Icon(
+                            _clienteIde == null
+                                ? Icons.chevron_right
+                                : Icons.check_circle,
+                            color: _clienteIde == null
+                                ? AppColors.textHint
+                                : AppColors.primary,
+                            size: 20,
+                          ),
+                        ],
+                      ),
                     ),
-                    Icon(
-                      _clienteIde == null
-                          ? Icons.chevron_right
-                          : Icons.check_circle,
-                      color: _clienteIde == null
-                          ? AppColors.textHint
-                          : AppColors.primary,
-                      size: 20,
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+
+                // ── Botón cliente rápido ───────────────
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: 'Crear cliente rápido',
+                  child: GestureDetector(
+                    onTap: _clienteRapido,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBg,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.primary),
+                      ),
+                      child: const Icon(
+                        Icons.person_add_outlined,
+                        color: AppColors.primary,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 20),
@@ -600,11 +785,11 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                           padding: const EdgeInsets.all(12),
                           child: Row(
                             children: [
-                              // ── Imagen ─────────────
+                              // Imagen
                               _ImagenCarrito(url: item.foto, size: 48),
                               const SizedBox(width: 10),
 
-                              // ── Info ───────────────
+                              // Info
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -632,7 +817,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                                 ),
                               ),
 
-                              // ── Cantidad + subtotal ─
+                              // Cantidad + subtotal
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
@@ -684,7 +869,7 @@ class _NuevaVentaScreenState extends State<NuevaVentaScreen> {
                                 ],
                               ),
 
-                              // ── Eliminar ───────────
+                              // Eliminar
                               IconButton(
                                 icon: const Icon(Icons.delete_outline,
                                     color: AppColors.error, size: 20),
@@ -1022,7 +1207,6 @@ class _ImagenCarrito extends StatelessWidget {
             debugPrint('Error cargando imagen: $url');
             return _placeholder();
           },
-          // ── CAMBIO 2: loadingBuilder corregido ──────
           loadingBuilder: (_, child, progress) {
             if (progress == null) return child;
             return SizedBox(

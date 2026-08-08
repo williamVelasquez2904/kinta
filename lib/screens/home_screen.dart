@@ -22,6 +22,7 @@ import 'ajustes_screen.dart';
 import 'configuracion_screen.dart';
 import 'auditoria_screen.dart';
 import 'cuentas_cobrar_screen.dart';
+import 'cambiar_clave_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel user;
@@ -572,7 +573,20 @@ class _HomeScreenState extends State<HomeScreen> {
       // ── Footer ─────────────────────────────────────────────
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
-        onDestinationSelected: (i) => setState(() => _selectedIndex = i),
+        onDestinationSelected: (i) {
+          if (i == 0) {
+            setState(() => _selectedIndex = 0);
+            return;
+          }
+          if (i == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CambiarClaveScreen(user: widget.user),
+              ),
+            );
+          }
+        },
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.primaryBg,
         elevation: 1,
