@@ -4,10 +4,6 @@ import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
 import '../utils/app_info.dart';
 import 'login_screen.dart';
-//import 'mis_clientes_screen.dart';
-//import 'creditos_screen.dart';
-//import 'saldos_screen.dart';
-//#import 'saldos_ventas_screen.dart';
 import 'clientes_screen.dart';
 import 'asistente_screen.dart';
 import 'ventas_screen.dart';
@@ -23,6 +19,7 @@ import 'configuracion_screen.dart';
 import 'auditoria_screen.dart';
 import 'cuentas_cobrar_screen.dart';
 import 'cambiar_clave_screen.dart';
+import 'mantenimiento_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel user;
@@ -167,6 +164,15 @@ class _HomeScreenState extends State<HomeScreen> {
       'colorBg': AppColors.primaryBg,
       'screen': AsistenteScreen(user: widget.user),
     },
+    if (widget.user.esAdministrador) ...[
+      {
+        'icon': Icons.build_outlined,
+        'label': 'Mantenimiento',
+        'color': AppColors.purple,
+        'colorBg': AppColors.purpleBg,
+        'screen': MantenimientoScreen(user: widget.user),
+      },
+    ],
 
     if (widget.user.tius == 1)
       {
