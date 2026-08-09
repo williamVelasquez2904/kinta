@@ -20,6 +20,7 @@ import 'auditoria_screen.dart';
 import 'cuentas_cobrar_screen.dart';
 import 'cambiar_clave_screen.dart';
 import 'mantenimiento_screen.dart';
+import 'actualizacion_masiva_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel user;
@@ -164,6 +165,15 @@ class _HomeScreenState extends State<HomeScreen> {
       'colorBg': AppColors.primaryBg,
       'screen': AsistenteScreen(user: widget.user),
     },
+    if (widget.user.esAdministrador) ...[
+      {
+        'icon': Icons.table_chart_outlined,
+        'label': 'Actualiz. Masiva',
+        'color': AppColors.info,
+        'colorBg': AppColors.infoBg,
+        'screen': ActualizacionMasivaScreen(user: widget.user),
+      },
+    ],
     if (widget.user.esAdministrador) ...[
       {
         'icon': Icons.build_outlined,
