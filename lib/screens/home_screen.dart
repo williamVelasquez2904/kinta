@@ -21,6 +21,7 @@ import 'cuentas_cobrar_screen.dart';
 import 'cambiar_clave_screen.dart';
 import 'mantenimiento_screen.dart';
 import 'actualizacion_masiva_screen.dart';
+import 'usuarios_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel user;
@@ -192,7 +193,15 @@ class _HomeScreenState extends State<HomeScreen> {
         'colorBg': AppColors.purpleBg,
         'screen': AuditoriaScreen(user: widget.user),
       },
-
+    if (widget.user.esAdministrador) ...[
+      {
+        'icon': Icons.manage_accounts_outlined,
+        'label': 'Usuarios',
+        'color': AppColors.purple,
+        'colorBg': AppColors.purpleBg,
+        'screen': UsuariosScreen(user: widget.user),
+      },
+    ],
     if (widget.user.tius == 1)
       {
         'icon': Icons.settings_outlined,
