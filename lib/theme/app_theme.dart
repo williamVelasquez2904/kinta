@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 class AppColors {
   // ── Paleta principal verde esmeralda ──────────────────────
   static const Color primary = Color(0xFF0F6E56); // verde oscuro
-  static const Color primaryLight = Color(0xFF1D9E75); // verde medio
-  static const Color primaryBg = Color(0xFFE1F5EE); // verde muy claro
+  static const Color primaryLight = Color(0xFF34D399); // verde medio
+  static const Color primaryBg = Color(0xFFEAF7F0); // verde muy claro (pastel)
 
   // ── Fondos ────────────────────────────────────────────────
   static const Color background = Color(0xFFF4F6F8); // gris muy claro
@@ -31,10 +31,10 @@ class AppColors {
   static const Color errorBg = Color(0xFFFCEBEB);
   static const Color warning = Color(0xFF854F0B);
   static const Color warningBg = Color(0xFFFAEEDA);
-  static const Color info = Color(0xFF185FA5);
-  static const Color infoBg = Color(0xFFE6F1FB);
-  static const Color purple = Color(0xFF534AB7);
-  static const Color purpleBg = Color(0xFFEEEDFE);
+  static const Color info = Color(0xFF5AA8FF); // azul suave
+  static const Color infoBg = Color(0xFFEAF6FF); // fondo azul pastel
+  static const Color purple = Color(0xFF7C6EE2); // lila pastel
+  static const Color purpleBg = Color(0xFFFAF8FF); // fondo lila muy suave
 
   // ── Módulos (acceso rápido) ───────────────────────────────
   static const Color misClientes = Color(0xFF0F6E56);
@@ -51,7 +51,7 @@ class AppColors {
   // ── Glow (compatibilidad con pantallas anteriores) ────────
   static const Color glow = Color(0xFF1D9E75);
   static const Color accent = Color(0xFF0F6E56);
-  static const Color accentLight = Color(0xFF1D9E75);
+  static const Color accentLight = Color(0xFF34D399);
   static const Color divider = Color(0xFFE8EAED);
 }
 

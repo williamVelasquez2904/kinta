@@ -22,6 +22,7 @@ import 'cuentas_cobrar_screen.dart';
 import 'cambiar_clave_screen.dart';
 import 'mantenimiento_screen.dart';
 import 'actualizacion_masiva_screen.dart';
+import 'carga_masiva_productos_screen.dart';
 import 'usuarios_screen.dart';
 import 'permisos_screen.dart';
 
@@ -39,39 +40,37 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> _modulosPermitidos = [];
   bool _permisosListos = false;
 
+  String _normalizarModulo(String valor) {
+    final texto = valor
+        .toLowerCase()
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ü', 'u')
+        .replaceAll('ñ', 'n')
+        .trim();
+
+    final sinSeparadores = texto
+        .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
+    final alias = {
+      'reporte ventas': 'reporte notas de entrega',
+      'ventas': 'notas de entrega',
+      'reporte notas de entrega': 'reporte notas de entrega',
+      'notas de entrega': 'notas de entrega',
+      'reporte inventario': 'reporte inventario',
+      'notas por producto': 'notas por producto',
+      'grafica productos': 'grafica productos',
+    };
+
+    return alias[sinSeparadores] ?? sinSeparadores;
+  }
+
   late final List<Map<String, dynamic>> _menuOpciones = [
-    /*
-    {
-      'icon': Icons.people_alt_outlined,
-      'label': 'Mis Clientes',
-      'color': AppColors.misClientes,
-      'colorBg': AppColors.misClientesBg,
-      'screen': MisClientesScreen(user: widget.user),
-    },*/
-    /*
-    {
-      'icon': Icons.hourglass_empty,
-      'label': 'Créditos Vencidos',
-      'color': AppColors.creditosVencidos,
-      'colorBg': AppColors.creditosBg,
-      'screen': const CreditosScreen(),
-    },*/
-    /*
-    {
-      'icon': Icons.balance,
-      'label': 'Saldos',
-      'color': AppColors.saldos,
-      'colorBg': AppColors.saldosBg,
-      'screen': const SaldosScreen(),
-    }, */
-    /*
-    {
-      'icon': Icons.trending_up,
-      'label': 'Saldos en Ventas',
-      'color': AppColors.saldosVentas,
-      'colorBg': AppColors.saldosVentasBg,
-      'screen': const SaldosVentasScreen(),
-    },*/
     {
       'icon': Icons.person_search,
       'label': 'Clientes',
@@ -86,22 +85,22 @@ class _HomeScreenState extends State<HomeScreen> {
       'colorBg': AppColors.purpleBg,
       'screen': ProductosScreen(user: widget.user),
     },
-    if (widget.user.esAdministrador) ...[
-      {
-        'icon': Icons.business_outlined,
-        'label': 'Proveedores',
-        'color': AppColors.purple,
-        'colorBg': AppColors.purpleBg,
-        'screen': ProveedoresScreen(user: widget.user),
-      },
-      {
-        'icon': Icons.shopping_bag_outlined,
-        'label': 'Compras',
-        'color': AppColors.warning,
-        'colorBg': AppColors.warningBg,
-        'screen': ComprasScreen(user: widget.user),
-      },
-    ],
+    /*if (widget.user.esAdministrador) ...[*/
+    {
+      'icon': Icons.business_outlined,
+      'label': 'Proveedores',
+      'color': AppColors.purple,
+      'colorBg': AppColors.purpleBg,
+      'screen': ProveedoresScreen(user: widget.user),
+    },
+    {
+      'icon': Icons.shopping_bag_outlined,
+      'label': 'Compras',
+      'color': AppColors.warning,
+      'colorBg': AppColors.warningBg,
+      'screen': ComprasScreen(user: widget.user),
+    },
+    /*],*/
     if (widget.user.accesoVentas)
       {
         'icon': Icons.point_of_sale,
@@ -111,16 +110,15 @@ class _HomeScreenState extends State<HomeScreen> {
         'colorBg': AppColors.infoBg,
         'screen': VentasScreen(user: widget.user),
       },
-    {
-      'icon': Icons.bar_chart,
-      'label': 'Reporte Notas de Entrega',
-      /*'label': 'Reporte Ventas',*/
-      'color': AppColors.info,
-      'colorBg': AppColors.infoBg,
-      'screen': ReporteVentasScreen(user: widget.user),
-    },
-
-    //
+    if (widget.user.accesoVentas)
+      {
+        'icon': Icons.bar_chart,
+        'label': 'Reporte Notas',
+        /*'label': 'Reporte Ventas',*/
+        'color': AppColors.info,
+        'colorBg': AppColors.infoBg,
+        'screen': ReporteVentasScreen(user: widget.user),
+      },
     {
       'icon': Icons.query_stats,
       'label': 'Notas por Producto',
@@ -171,15 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'colorBg': AppColors.primaryBg,
       'screen': AsistenteScreen(user: widget.user),
     },
-    if (widget.user.esAdministrador) ...[
-      {
-        'icon': Icons.table_chart_outlined,
-        'label': 'Actualiz. Masiva',
-        'color': AppColors.info,
-        'colorBg': AppColors.infoBg,
-        'screen': ActualizacionMasivaScreen(user: widget.user),
-      },
-    ],
+
     if (widget.user.esAdministrador) ...[
       {
         'icon': Icons.build_outlined,
@@ -189,6 +179,24 @@ class _HomeScreenState extends State<HomeScreen> {
         'screen': MantenimientoScreen(user: widget.user),
       },
     ],
+    /*if (widget.user.esAdministrador) ...[*/
+    {
+      'icon': Icons.table_chart_outlined,
+      'label': 'Actualiz. Masiva',
+      'color': AppColors.info,
+      'colorBg': AppColors.infoBg,
+      'screen': ActualizacionMasivaScreen(user: widget.user),
+    },
+    /*],*/
+    /*if (widget.user.esAdministrador) ...[*/
+    {
+      'icon': Icons.upload_file_outlined,
+      'label': 'Carga Masiva Productos',
+      'color': AppColors.success,
+      'colorBg': AppColors.successBg,
+      'screen': CargaMasivaProductosScreen(user: widget.user),
+    },
+    /*],*/
 
     if (widget.user.tius == 1)
       {
@@ -228,11 +236,17 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!_permisosListos) return [];
     if (_modulosPermitidos.isEmpty) return _menuOpciones;
 
+    final permisosNormalizados =
+        _modulosPermitidos.map((p) => _normalizarModulo(p)).toSet();
+
+    debugPrint('PERMISOS NORMALIZADOS: $permisosNormalizados');
+
     return _menuOpciones.where((item) {
       final label = item['label'] as String;
       final sinFiltro = ['Permisos', 'Auditoría', 'Configuración'];
       if (sinFiltro.contains(label)) return true;
-      return _modulosPermitidos.contains(label);
+      final labelNormalizado = _normalizarModulo(label);
+      return permisosNormalizados.contains(labelNormalizado);
     }).toList();
   }
 
@@ -244,13 +258,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _cargarPermisos() async {
     final result = await _permisoService.misPermisos(widget.user.usuaIde);
+    debugPrint('RESULTADO misPermisos: $result');
     if (!mounted) return;
 
     if (result['success'] == true) {
       final permisos = result['permisos'] as List? ?? [];
+      final lista = permisos
+          .map((p) => p['sumo_descrip']?.toString().trim() ?? '')
+          .where((p) => p.isNotEmpty)
+          .toList();
+
+      debugPrint('PERMISOS BRUTOS: $lista');
+      debugPrint(
+          '¿Existe Reporte Notas de Entrega? => ${lista.any((p) => _normalizarModulo(p) == 'reporte notas de entrega')}');
+
       setState(() {
-        _modulosPermitidos =
-            permisos.map((p) => p['sumo_descrip'].toString()).toList();
+        _modulosPermitidos = lista;
         _permisosListos = true;
       });
     } else {

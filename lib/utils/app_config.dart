@@ -11,12 +11,12 @@ class AppConfig {
   //static const String clienteId = 'nestor'; // Kinta0008
   //static const String clienteId = 'jeanz'; // Kinta0009 Jean Carlos Leche
   //static const String clienteId = 'demo1'; // kintatie_kinta_demo1
-  //static const String clienteId = 'demo3'; // kintatie_kinta0003
+  static const String clienteId = 'demo3'; // kintatie_kinta0003
   //static const String clienteId = 'demo4'; //charc R & R
   //static const String clienteId = 'demo5'; // charcuteria libertador
   //static const String clienteId = 'demo10'; // jESUS pULIDO
   //static const String clienteId = 'tienda_sara'; // Ana Tienda Sara
-  static const String clienteId = 'grafikoosc'; //
+  //static const String clienteId = 'grafikoosc'; //
 
   // ── Nombre de la app base ─────────────────────────────────
   static const String _appNombre = 'Kinta';

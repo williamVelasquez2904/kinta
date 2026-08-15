@@ -32,6 +32,8 @@ class UserModel {
     switch (tius) {
       case 1:
         return 'ADMIN SISTEMA';
+      case 2:
+        return 'ASISTENTE';
       case 3:
         return 'ADMIN TIENDA';
       case 4:
@@ -44,7 +46,8 @@ class UserModel {
   }
 
   // Acceso al módulo Ventas: Admin Tienda, Vendedor o Vendedor Detal
-  bool get accesoVentas => tius == 3 || tius == 4 || tius == 5 || tius == 1;
+  bool get accesoVentas =>
+      tius == 3 || tius == 4 || tius == 5 || tius == 1 || tius == 2;
 
   factory UserModel.fromJson(Map<String, dynamic> json, String login) {
     final tiusValue = json['tius'] ?? json['usua_tius'] ?? json['user_tius'];
