@@ -3,7 +3,7 @@ class AppConfig {
 
   //static const String clienteId = 'kinta_demo';
   //static const String clienteId = 'valenpan';
-  //static const String clienteId = 'farmamoto'; // Kinta0002
+  static const String clienteId = 'farmamoto'; // Kinta0002
   //static const String clienteId = 'nicely'; // Kinta0008
   //static const String clienteId = 'parmol'; // Kinta0004
   //static const String clienteId = 'aromas'; // Kinta0005
@@ -11,7 +11,7 @@ class AppConfig {
   //static const String clienteId = 'nestor'; // Kinta0008
   //static const String clienteId = 'jeanz'; // Kinta0009 Jean Carlos Leche
   //static const String clienteId = 'demo1'; // kintatie_kinta_demo1
-  static const String clienteId = 'demo3'; // kintatie_kinta0003
+  //static const String clienteId = 'demo3'; // kintatie_kinta0003
   //static const String clienteId = 'demo4'; //charc R & R
   //static const String clienteId = 'demo5'; // charcuteria libertador
   //static const String clienteId = 'demo10'; // jESUS pULIDO
