@@ -56,7 +56,13 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
       // Empresa
       final resultEmpresa = await _ventaService.obtenerEmpresa();
       if (resultEmpresa['success'] == true) {
-        setState(() => _empresa = resultEmpresa['empresa'] ?? {});
+        final empresa = resultEmpresa['empresa'] ?? {};
+        setState(() {
+          _empresa = empresa;
+          if (empresa['empresa_nombre'] != null) {
+            AppConfig.empresaNombre = empresa['empresa_nombre'].toString();
+          }
+        });
       } else {
         setState(
             () => _errorMsg = resultEmpresa['message'] ?? 'Error al conectar');
@@ -319,7 +325,8 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                           _fila(
                             Icons.storage_outlined,
                             'Conectado a',
-                            AppConfig.clienteId.toUpperCase(),
+                            _empresa['empresa_nombre']?.toString() ??
+                                AppConfig.clienteId.toUpperCase(),
                             AppColors.primary,
                             negrita: true,
                           ),

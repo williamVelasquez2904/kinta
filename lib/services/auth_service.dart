@@ -36,7 +36,7 @@ class AuthService {
         return {'success': false, 'message': data['message']};
       }
       await _auditoria.loginFallido(login);
-      return {'success': false, 'message': 'Error del servidor'};
+      return {'success': false, 'message': 'Error del servidor. Login fallido'};
     } catch (e) {
       await _auditoria.loginFallido(login);
       return {'success': false, 'message': 'Error de conexión: $e'};

@@ -26,7 +26,7 @@ dependencies:
   file_picker: ^8.1.2
 
 dev_dependencies:
-  flutter_launcher_icons: "^0.13.1"
+  flutter_launcher_icons: "^0.14.0"
 
   flutter_test:
     sdk: flutter
@@ -34,10 +34,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/app_icon.png" # Ruta a tu imagen (recomendado 1024x1024 px)
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+  image_path: "assets/icons/app_icon.png"
   # Opcional para Android adaptativo:
   # adaptive_icon_background: "#FFFFFF"
-  # adaptive_icon_foreground: "assets/icon/icon.png"  
+  # adaptive_icon_foreground: "assets/icon/icon.png"

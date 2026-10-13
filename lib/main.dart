@@ -2,13 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:window_manager/window_manager.dart';
 import 'theme/app_theme.dart';
+import 'utils/app_config.dart';
 import 'utils/app_info.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'services/auth_service.dart';
+import 'services/venta_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    final resultEmpresa = await VentaService().obtenerEmpresa();
+    if (resultEmpresa['success'] == true) {
+      final empresa = resultEmpresa['empresa'] ?? {};
+      final nombreEmpresa = empresa['empresa_nombre']?.toString() ?? '';
+      if (nombreEmpresa.trim().isNotEmpty) {
+        AppConfig.empresaNombre = nombreEmpresa;
+      }
+    }
+  } catch (_) {
+    // Se usa el nombre por defecto si no se pudo cargar la empresa.
+  }
 
   // Solo configura ventana en escritorio Windows
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
@@ -63,6 +78,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _verificarSesion() async {
     await Future.delayed(const Duration(seconds: 1));
+
     final user = await AuthService().getSesionActiva();
     if (!mounted) return;
     Navigator.pushReplacement(

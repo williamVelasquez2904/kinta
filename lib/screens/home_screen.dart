@@ -25,6 +25,7 @@ import 'carga_masiva_productos_screen.dart';
 import 'actualizacion_masiva_screen.dart';
 import 'usuarios_screen.dart';
 import 'permisos_screen.dart';
+import 'monitor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserModel user;
@@ -190,6 +191,15 @@ class _HomeScreenState extends State<HomeScreen> {
         'color': AppColors.purple,
         'colorBg': AppColors.purpleBg,
         'screen': AuditoriaScreen(user: widget.user),
+      });
+    }
+    if (widget.user.tius == 1) {
+      items.add({
+        'icon': Icons.monitor_heart_outlined,
+        'label': 'Monitor',
+        'color': AppColors.purple,
+        'colorBg': AppColors.purpleBg,
+        'screen': MonitorScreen(user: widget.user),
       });
     }
 
@@ -518,7 +528,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Navigator.pop(context);
                             _navegarA(item['screen']);
                           },
-                        )),
+                       )),
 
                   const Divider(height: 24),
 

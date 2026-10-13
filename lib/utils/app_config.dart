@@ -1,9 +1,12 @@
 class AppConfig {
   // ── ID del cliente activo ─────────────────────────────────
+  // IMPORTANTE: debe coincidir exactamente con la clave configurada en el backend.
+  // Si cambia este valor y el cliente no existe en la BD del backend, las APIs de permisos
+  // y login devolverán errores 500/403.
 
   //static const String clienteId = 'kinta_demo';
   //static const String clienteId = 'valenpan';
-  static const String clienteId = 'farmamoto'; // Kinta0002
+  //static const String clienteId = 'farmamoto'; // Kinta0002
   //static const String clienteId = 'nicely'; // Kinta0008
   //static const String clienteId = 'parmol'; // Kinta0004
   //static const String clienteId = 'aromas'; // Kinta0005
@@ -15,14 +18,27 @@ class AppConfig {
   //static const String clienteId = 'demo4'; //charc R & R
   //static const String clienteId = 'demo5'; // charcuteria libertador
   //static const String clienteId = 'demo10'; // jESUS pULIDO
+  //static const String clienteId = 'demo12'; // kintatie_kinta0012
   //static const String clienteId = 'tienda_sara'; // Ana Tienda Sara
   //static const String clienteId = 'grafikoosc'; //
+
+  //static const String clienteId = 'autoservflores'; //Kinta0008
+  static const String clienteId = 'cocosytacos'; // Kinta0016
+
+  // ── Nombre visible de la app ─────────────────────────────────
+  static String empresaNombre = '';
 
   // ── Nombre de la app base ─────────────────────────────────
   static const String _appNombre = 'Kinta';
 
   // ── Nombre completo: Kinta-sumimed ────────────────────────
-  static String get appNombre => '$_appNombre-$clienteId';
+  static String get appNombre {
+    final nombreEmpresa = empresaNombre.trim();
+    if (nombreEmpresa.isNotEmpty) {
+      return nombreEmpresa;
+    }
+    return '$_appNombre-$clienteId';
+  }
 
   // ── Entorno ───────────────────────────────────────────────
   //static const Entorno entorno = Entorno.local;

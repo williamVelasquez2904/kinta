@@ -6,8 +6,17 @@ import '../utils/app_config.dart';
 class PermisoService {
   Future<Map<String, dynamic>> _post(Map<String, dynamic> body) async {
     const String endpoint = 'api_permisos.php';
+
+    final clienteId = AppConfig.clienteId.trim();
+    if (clienteId.isEmpty) {
+      return {
+        'success': false,
+        'message': 'No hay cliente activo configurado. Revisa AppConfig.clienteId.',
+      };
+    }
+
     try {
-      body['cliente_id'] = AppConfig.clienteId;
+      body['cliente_id'] = clienteId;
       final response = await http
           .post(
             Uri.parse(AppConfig.api(endpoint)),
@@ -30,6 +39,24 @@ class PermisoService {
           return {'success': false, 'message': 'Error PHP: ${response.body}'};
         }
       }
+
+      if (response.statusCode >= 500) {
+        final raw = response.body.trim();
+        if (raw.isNotEmpty) {
+          try {
+            final decoded = jsonDecode(raw);
+            if (decoded is Map && decoded['message'] != null) {
+              return {'success': false, 'message': decoded['message']};
+            }
+          } catch (_) {}
+        }
+        return {
+          'success': false,
+          'message':
+              'Error del servidor (HTTP ${response.statusCode}). Verifica que el cliente "$clienteId" exista en el backend y que la configuración de permisos esté correcta.',
+        };
+      }
+
       return {'success': false, 'message': 'HTTP ${response.statusCode}'};
     } catch (e) {
       return {'success': false, 'message': 'Error: $e'};
